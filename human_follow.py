@@ -1,8 +1,7 @@
 import cv2
 from ultralytics import YOLO
 from tracker import Tracker
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 # Load the YOLOv8 model
 model = YOLO('weights/yolov8n.pt')
@@ -47,16 +46,10 @@ while cap.isOpened():
     if success:
         # Run YOLOv8 tracking on the frame, persisting tracks between frames
         results = model.predict(frame, classes=[0])
-
+        
         bboxes, classes, scores = bbx_utils(results)
-        
-        
-        cmap = plt.get_cmap('tab20b') #initialize color map
-        colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
-        
 
         tracker.update(frame, bboxes, scores, classes)
-        
 
         cv2.imshow("YOLOv8 Tracking", frame)
         # break
