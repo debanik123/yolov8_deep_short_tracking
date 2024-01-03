@@ -4,11 +4,11 @@
 
 # But not these files & folders...
 !.gitignore
-!/deep_sort
-!/weights
-!/LICENSE
 !/human_follow.py
-!/eigen_test
-!/tracker.py  
-!/tracking_helpers.py
+!/LICENSE
 !/README.md
+!/tracker.py
+!/tracking_helpers.py
+!/weights
+!/deep_sort
+
