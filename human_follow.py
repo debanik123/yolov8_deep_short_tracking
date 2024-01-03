@@ -9,7 +9,7 @@ tracker = Tracker()
 # Open the video file
 # video_path = "path/to/video.mp4"
 cap = cv2.VideoCapture(0)
-detection_threshold = 0.7
+detection_threshold = 0.85
 
 
 
