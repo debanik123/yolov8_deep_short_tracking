@@ -64,7 +64,7 @@ class Tracker:
             h = (y2-y1)
 
             box = [x1,y1,w,h]
-            print("box ---> ",box)
+            # print("box ---> ",box)
             bboxes.append(box)
             classes.append(label)
             scores.append(score)
