@@ -14,7 +14,7 @@ class Tracker:
     def __init__(self):
         max_cosine_distance = 0.4
         nn_budget = None
-        encoder_model_filename = 'mars-small128.pb'
+        encoder_model_filename = './weights/mars-small128.pb'
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = DeepSortTracker(metric)
         self.encoder = create_box_encoder(encoder_model_filename, batch_size=1)
