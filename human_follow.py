@@ -9,10 +9,7 @@ tracker = Tracker()
 # Open the video file
 # video_path = "path/to/video.mp4"
 cap = cv2.VideoCapture(0)
-detection_threshold = 0.85
-
-
-
+# detection_threshold = 0.90
 
 # Loop through the video frames
 while cap.isOpened():

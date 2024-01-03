@@ -21,6 +21,7 @@ class Tracker:
 
         cmap = plt.get_cmap('tab20b') #initialize color map
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
+        self.detection_threshold = 0.80
 
     def update(self, frame, bboxes, scores, classes):
         features = self.encoder(frame, bboxes)
@@ -65,8 +66,9 @@ class Tracker:
 
             box = [x1,y1,w,h]
             # print("box ---> ",box)
-            bboxes.append(box)
-            classes.append(label)
-            scores.append(score)
+            if(score > self.detection_threshold):
+                bboxes.append(box)
+                classes.append(label)
+                scores.append(score)
         return (bboxes, classes, scores)
 
