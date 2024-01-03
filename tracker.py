@@ -42,7 +42,31 @@ class Tracker:
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
             cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
+    
+    def bbx_utils(self, results):
+        bboxes = []
+        classes = []
+        scores = []
+        class_names = ['person']
+        for res in results[0].boxes.data.tolist():
+            # print(res)
+            x1 = int(res[0])
+            y1 = int(res[1])
+            x2 = int(res[2])
+            y2 = int(res[3])
+            score = res[4]
+            class_id = int(res[5])
 
+            label = class_names[class_id]
+            # cv2.rectangle(frame, (x1, y1), (x2,y2), (0,255,0), 2)
 
+            w = (x2-x1)
+            h = (y2-y1)
 
+            box = [x1,y1,w,h]
+            print("box ---> ",box)
+            bboxes.append(box)
+            classes.append(label)
+            scores.append(score)
+        return (bboxes, classes, scores)
 
