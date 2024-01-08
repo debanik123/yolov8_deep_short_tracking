@@ -16,9 +16,10 @@ class Pcl_utils():
     def convert_pixel_to_3d_world(self, depth, x, y):
         upixel = np.array([float(x), float(y)], dtype=np.float32)
         distance = depth.get_distance(x, y)
-        intrinsics = depth.get_profile().as_video_stream_profile().get_intrinsics()
-        pcd = rs.rs2_deproject_pixel_to_point(intrinsics, upixel, distance)
-        return pcd[2], -pcd[0], -pcd[1]
+        print(distance)
+        # intrinsics = depth.get_profile().as_video_stream_profile().get_intrinsics()
+        # pcd = rs.rs2_deproject_pixel_to_point(intrinsics, upixel, distance)
+        # return pcd[2], -pcd[0], -pcd[1]
     
     def dis_fun(self, pcd):
         return math.hypot(pcd[0],pcd[1]) # x,y
@@ -74,7 +75,7 @@ class Pcl_utils():
         dy = point2[1] - point1[1]
         return math.sqrt(dx**2 + dy**2)
     
-    def obstracle_layer(self, frame):
+    def obstracle_layer(self, depth, frame):
         Y, X, _ = frame.shape
 
         Ix = X // 2
@@ -93,4 +94,5 @@ class Pcl_utils():
                     x_int = int(round(i))
                     y_int = int(round(j))
                     cv2.circle(frame, (x_int, y_int), radius=1, color=(0, 255, 0), thickness=-1)
-
+                    self.convert_pixel_to_3d_world(depth, x_int, y_int)
+                    # print(obstracle_cloud)

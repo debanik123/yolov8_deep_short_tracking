@@ -50,7 +50,6 @@ class RealSenseYoloHandTracker:
                     return finger_count
                 else:
                     return 0
-        
         else:
             return 0
 
@@ -65,6 +64,7 @@ class RealSenseYoloHandTracker:
             if not color_frame:
                 continue
             
+            
             frame = np.asanyarray(color_frame.get_data())
 
             # YOLO Hand Tracking
@@ -75,8 +75,8 @@ class RealSenseYoloHandTracker:
             # MediaPipe Hand Tracking
             finger_count = self.hand_tracking(frame)
             cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-            self.pcl_uts.obstracle_layer(frame)
+            if depth_frame:
+                self.pcl_uts.obstracle_layer(depth_frame, frame)
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
