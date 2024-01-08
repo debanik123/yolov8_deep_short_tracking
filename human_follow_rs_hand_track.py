@@ -4,6 +4,7 @@ import pyrealsense2 as rs
 from ultralytics import YOLO
 from tracker import Tracker
 import mediapipe as mp
+from pcl_utils import Pcl_utils
 
 class RealSenseYoloHandTracker:
     def __init__(self, yolo_weights_path='weights/yolov8n.pt'):
@@ -22,6 +23,7 @@ class RealSenseYoloHandTracker:
         self.img_ox = 50
         self.img_oy = 10
         self.num_point_obs = 25
+        pcl_uts = Pcl_utils()
     
     def obstracle_layer(self, frame):
         Y, X, _ = frame.shape
@@ -42,8 +44,6 @@ class RealSenseYoloHandTracker:
                     x_int = int(round(i))
                     y_int = int(round(j))
                     cv2.circle(frame, (x_int, y_int), radius=1, color=(0, 255, 0), thickness=-1)
-
-
 
 
     def check_camera_connection(self):
