@@ -38,12 +38,16 @@ class RealSenseYoloHandTracker:
         h, w, _ = frame.shape
         results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
-            fingertips = [(5, 8), (9,12), (13,16), (17,20)]
-            fingers_cnt=0
             for hand_landmarks in results.multi_hand_landmarks:
                 if results.multi_handedness[0].classification[0].label == 'Left':
                     finger_count = self.count_fingers(hand_landmarks)
-                    cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    return finger_count
+                else:
+                    return 0
+        
+        else:
+            return 0
+
 
 
     def run(self):
@@ -62,8 +66,10 @@ class RealSenseYoloHandTracker:
             self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
             # MediaPipe Hand Tracking
-            self.hand_tracking(frame)
+            finger_count = self.hand_tracking(frame)
 
+            cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
