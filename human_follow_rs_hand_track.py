@@ -28,36 +28,32 @@ class RealSenseYoloHandTracker:
         # Start streaming
         self.pipeline.start(self.config)
 
+    def count_fingers(self, hand_landmarks):
+        fingertips = [2, 4, 5, 8, 9, 12, 13, 16, 17, 20]
+        count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
+
+        return count
+
     def hand_tracking(self, frame):
         # MediaPipe Hand Tracking
+        h, w, _ = frame.shape
         results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
+            fingertips = [(5, 8), (9,12), (13,16), (17,20)]
+            fingers_cnt=0
             for hand_landmarks in results.multi_hand_landmarks:
-                # Extract landmarks for fingers
-                finger_landmarks = [hand_landmarks.landmark[i] for i in range(1, 21) if i % 4 == 0]
+                if results.multi_handedness[0].classification[0].label == 'Left':
+                    for fingertip in fingertips:
+                        start_point = (int(hand_landmarks.landmark[fingertip[0]].x * w), int(hand_landmarks.landmark[fingertip[0]].y * h))
+                        end_point = (int(hand_landmarks.landmark[fingertip[1]].x * w), int(hand_landmarks.landmark[fingertip[1]].y * h))
 
-                # Detect fingers based on Y-coordinate of finger landmarks
-                num_fingers_up = sum(1 for landmark in finger_landmarks if landmark.y < finger_landmarks[0].y)
-
-                # Draw hand landmarks on the frame
-                for landmark in hand_landmarks.landmark:
-                    h, w, _ = frame.shape
-                    cx, cy = int(landmark.x * w), int(landmark.y * h)
-                    cv2.circle(frame, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
-
-                # Connect all hand landmarks with lines
-                num_landmarks = len(hand_landmarks.landmark)
-                connections = [(i, i + 1) for i in range(num_landmarks - 1)]
-                for connection in connections:
-                    start_point = (int(hand_landmarks.landmark[connection[0]].x * w), int(hand_landmarks.landmark[connection[0]].y * h))
-                    end_point = (int(hand_landmarks.landmark[connection[1]].x * w), int(hand_landmarks.landmark[connection[1]].y * h))
-                    cv2.line(frame, start_point, end_point, (0, 255, 0), 2)
-
-                # Display the number of fingers
-                cv2.putText(frame, f'Fingers: {num_fingers_up}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-# ... (rest of the class methods remain unchanged)
-
+                        if(end_point[1]<start_point[1]):
+                            cv2.circle(frame, start_point, 5, (255, 0, 0), cv2.FILLED)
+                            cv2.circle(frame, end_point, 5, (255, 0, 0), cv2.FILLED)
+                            cv2.line(frame, start_point, end_point, (0, 255, 0), 2)
+                            fingers_cnt +=1
+                
+            cv2.putText(frame, f"Finger Count: {fingers_cnt}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 
     def run(self):
