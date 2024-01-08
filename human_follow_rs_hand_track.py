@@ -18,6 +18,24 @@ class RealSenseYoloHandTracker:
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands()
 
+        self.ox_human_bbx_2d_rr = 300
+        self.img_ox = 50
+        self.img_oy = 10
+    
+    def obstracle_layer(self, frame):
+        Y, X, _ = frame.shape
+
+        Ix = X // 2
+        Iy = Y //2
+
+        human_bbx_2d_AA = (Ix - self.ox_human_bbx_2d_rr, self.img_ox)
+        human_bbx_2d_CC = (Ix + self.ox_human_bbx_2d_rr, Y-self.img_oy)
+
+        cv2.rectangle(frame, human_bbx_2d_AA, human_bbx_2d_CC, (0, 0, 255), 2)
+
+
+
+
     def check_camera_connection(self):
         ctx = rs.context()
         devices = ctx.query_devices()
@@ -67,9 +85,10 @@ class RealSenseYoloHandTracker:
 
             # MediaPipe Hand Tracking
             finger_count = self.hand_tracking(frame)
-
             cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
+
+            self.obstracle_layer(frame)
+
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
