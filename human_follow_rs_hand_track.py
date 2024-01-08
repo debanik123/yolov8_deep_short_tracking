@@ -29,9 +29,8 @@ class RealSenseYoloHandTracker:
         self.pipeline.start(self.config)
 
     def count_fingers(self, hand_landmarks):
-        fingertips = [2, 4, 5, 8, 9, 12, 13, 16, 17, 20]
+        fingertips = [8, 12, 16, 20]
         count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
-
         return count
 
     def hand_tracking(self, frame):
@@ -43,17 +42,8 @@ class RealSenseYoloHandTracker:
             fingers_cnt=0
             for hand_landmarks in results.multi_hand_landmarks:
                 if results.multi_handedness[0].classification[0].label == 'Left':
-                    for fingertip in fingertips:
-                        start_point = (int(hand_landmarks.landmark[fingertip[0]].x * w), int(hand_landmarks.landmark[fingertip[0]].y * h))
-                        end_point = (int(hand_landmarks.landmark[fingertip[1]].x * w), int(hand_landmarks.landmark[fingertip[1]].y * h))
-
-                        if(end_point[1]<start_point[1]):
-                            cv2.circle(frame, start_point, 5, (255, 0, 0), cv2.FILLED)
-                            cv2.circle(frame, end_point, 5, (255, 0, 0), cv2.FILLED)
-                            cv2.line(frame, start_point, end_point, (0, 255, 0), 2)
-                            fingers_cnt +=1
-                
-            cv2.putText(frame, f"Finger Count: {fingers_cnt}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    finger_count = self.count_fingers(hand_landmarks)
+                    cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
 
     def run(self):
