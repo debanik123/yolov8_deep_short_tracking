@@ -19,32 +19,10 @@ class RealSenseYoloHandTracker:
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands()
 
-        self.ox_human_bbx_2d_rr = 300
-        self.img_ox = 50
-        self.img_oy = 10
-        self.num_point_obs = 25
-        pcl_uts = Pcl_utils()
+        
+        self.pcl_uts = Pcl_utils()
     
-    def obstracle_layer(self, frame):
-        Y, X, _ = frame.shape
-
-        Ix = X // 2
-        Iy = Y //2
-
-        human_bbx_2d_AA = (Ix - self.ox_human_bbx_2d_rr, self.img_ox)
-        human_bbx_2d_BB = (Ix + self.ox_human_bbx_2d_rr, self.img_oy)
-        human_bbx_2d_CC = (Ix + self.ox_human_bbx_2d_rr, Y-self.img_oy)
-
-        cv2.rectangle(frame, human_bbx_2d_AA, human_bbx_2d_CC, (0, 0, 255), 2)
-
-        diff_bbx = np.abs(human_bbx_2d_AA[0] - human_bbx_2d_BB[0]) // self.num_point_obs
-        if(diff_bbx > 0):
-            for i in np.arange(human_bbx_2d_AA[0], human_bbx_2d_CC[0] + diff_bbx, diff_bbx):
-                for j in np.arange(human_bbx_2d_AA[1], human_bbx_2d_CC[1] + diff_bbx, diff_bbx):
-                    x_int = int(round(i))
-                    y_int = int(round(j))
-                    cv2.circle(frame, (x_int, y_int), radius=1, color=(0, 255, 0), thickness=-1)
-
+    
 
     def check_camera_connection(self):
         ctx = rs.context()
@@ -97,7 +75,7 @@ class RealSenseYoloHandTracker:
             finger_count = self.hand_tracking(frame)
             cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-            self.obstracle_layer(frame)
+            self.pcl_uts.obstracle_layer(frame)
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
