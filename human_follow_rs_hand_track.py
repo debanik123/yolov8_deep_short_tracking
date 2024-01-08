@@ -14,7 +14,7 @@ class RealSenseYoloHandTracker:
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-
+        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
         # Initialize MediaPipe Hand Tracking
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands()

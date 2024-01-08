@@ -8,18 +8,17 @@ import pyrealsense2 as rs
 
 class Pcl_utils():
     def __init__(self):
-        self.ox_human_bbx_2d_rr = 300
-        self.img_ox = 50
-        self.img_oy = 10
-        self.num_point_obs = 25
+        self.ox_human_bbx_2d_rr = 200
+        self.img_ox = 100
+        self.img_oy = 100
+        self.num_point_obs = 10
 
     def convert_pixel_to_3d_world(self, depth, x, y):
         upixel = np.array([float(x), float(y)], dtype=np.float32)
         distance = depth.get_distance(x, y)
-        print(distance)
-        # intrinsics = depth.get_profile().as_video_stream_profile().get_intrinsics()
-        # pcd = rs.rs2_deproject_pixel_to_point(intrinsics, upixel, distance)
-        # return pcd[2], -pcd[0], -pcd[1]
+        intrinsics = depth.get_profile().as_video_stream_profile().get_intrinsics()
+        pcd = rs.rs2_deproject_pixel_to_point(intrinsics, upixel, distance)
+        return pcd[2], -pcd[0], -pcd[1]
     
     def dis_fun(self, pcd):
         return math.hypot(pcd[0],pcd[1]) # x,y
@@ -94,5 +93,9 @@ class Pcl_utils():
                     x_int = int(round(i))
                     y_int = int(round(j))
                     cv2.circle(frame, (x_int, y_int), radius=1, color=(0, 255, 0), thickness=-1)
-                    self.convert_pixel_to_3d_world(depth, x_int, y_int)
-                    # print(obstracle_cloud)
+                    try:
+                        obstracle_cloud_pcd = self.convert_pixel_to_3d_world(depth, x_int, y_int)
+                        print(i,j, obstracle_cloud_pcd)
+                        # Process obstracle_cloud_pcd as needed
+                    except Exception as e:
+                        print(i,j,f"Error: {e}")
