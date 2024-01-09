@@ -103,7 +103,7 @@ class Pcl_utils():
                     try:
                         obstracle_distance = self.convert_pixel_to_distance(depth, x_int, y_int)
                         obstracle_pcd = self.convert_pixel_to_3d_world(depth, x_int, y_int)
-                        print(i,j, "obstracle_distance ---> ",obstracle_distance, "pcd --> ", obstracle_pcd)
+                        print("obstracle_distance ---> ",obstracle_distance)
                         
                         if(obstracle_distance < self.obstracle_distance_th):
                             self.stop_flag = True
