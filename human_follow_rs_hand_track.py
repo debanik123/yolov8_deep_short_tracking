@@ -40,26 +40,26 @@ class RealSenseYoloHandTracker:
         count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
         return count
     
-    def draw_hand_rectangle(self, frame, landmarks, depth):
-        h, w, _ = frame.shape
-        x_min, y_min, x_max, y_max = w, h, 0, 0
-        hand_distances = []
+    # def draw_hand_rectangle(self, frame, landmarks, depth):
+    #     h, w, _ = frame.shape
+    #     x_min, y_min, x_max, y_max = w, h, 0, 0
+    #     hand_distances = []
 
-        for landmark in landmarks.landmark:
-            x, y = int(landmark.x * w), int(landmark.y * h)
-            cv2.circle(frame, (x, y), radius=2, color=(0, 255, 0), thickness=-1)
-            hand_distance = self.pcl_uts.convert_pixel_to_distance(depth, x, y)
-            x_min = min(x_min, x)
-            y_min = min(y_min, y)
-            x_max = max(x_max, x)
-            y_max = max(y_max, y)
+    #     for landmark in landmarks.landmark:
+    #         x, y = int(landmark.x * w), int(landmark.y * h)
+    #         cv2.circle(frame, (x, y), radius=2, color=(0, 255, 0), thickness=-1)
+    #         hand_distance = self.pcl_uts.convert_pixel_to_distance(depth, x, y)
+    #         x_min = min(x_min, x)
+    #         y_min = min(y_min, y)
+    #         x_max = max(x_max, x)
+    #         y_max = max(y_max, y)
 
-            hand_distances.append(hand_distance)
+    #         hand_distances.append(hand_distance)
         
-        average_distance = np.mean(hand_distances)
-        if (average_distance < self.hand_distance_th):
-            cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
-        return average_distance
+    #     average_distance = np.mean(hand_distances)
+    #     if (average_distance < self.hand_distance_th):
+    #         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+    #     return average_distance
         
 
 
@@ -69,16 +69,8 @@ class RealSenseYoloHandTracker:
         results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-                if results.multi_handedness[0].classification[0].label == 'Left':
-                    hand_distance = self.draw_hand_rectangle(frame, hand_landmarks, depth)
-                    if (hand_distance < self.hand_distance_th):
-                        finger_count = self.count_fingers(hand_landmarks)
-                        return finger_count
-
-                    else:
-                        return 0.0
-                else:
-                    return 0.0
+                finger_count = self.count_fingers(hand_landmarks)
+                return finger_count
         else:
             return 0.0
 
