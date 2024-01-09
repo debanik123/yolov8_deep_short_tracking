@@ -39,27 +39,6 @@ class RealSenseYoloHandTracker:
         fingertips = [8, 12, 16, 20]
         count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
         return count
-    
-    # def draw_hand_rectangle(self, frame, landmarks, depth):
-    #     h, w, _ = frame.shape
-    #     x_min, y_min, x_max, y_max = w, h, 0, 0
-    #     hand_distances = []
-
-    #     for landmark in landmarks.landmark:
-    #         x, y = int(landmark.x * w), int(landmark.y * h)
-    #         cv2.circle(frame, (x, y), radius=2, color=(0, 255, 0), thickness=-1)
-    #         hand_distance = self.pcl_uts.convert_pixel_to_distance(depth, x, y)
-    #         x_min = min(x_min, x)
-    #         y_min = min(y_min, y)
-    #         x_max = max(x_max, x)
-    #         y_max = max(y_max, y)
-
-    #         hand_distances.append(hand_distance)
-        
-    #     average_distance = np.mean(hand_distances)
-    #     if (average_distance < self.hand_distance_th):
-    #         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
-    #     return average_distance
         
 
 
