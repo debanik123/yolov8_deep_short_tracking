@@ -59,6 +59,8 @@ class RealSenseYoloHandTracker:
                 for track in self.tracker.tracks_:
                     if track.track_id == self.tracker.target_track_ID:
                         self.tracker.draw_bbx(track, frame)
+                    else:
+                        self.tracker.target_track_ID = None
                 
 
 
