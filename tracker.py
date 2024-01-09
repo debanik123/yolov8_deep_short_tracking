@@ -99,17 +99,17 @@ class Tracker:
         tracks = self.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
         for kps, track in zip(keypoints_tensor, tracks):
-            right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
-            left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
-
             try:
+                right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
+                left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
+                
                 right_angle = right_kps.distance()
                 left_angle = left_kps.distance()
 
                 # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
                 # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
-                if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
+                if right_angle is not None and right_angle > 70 and right_angle < 95:
                     self.unique_id = track.track_id
                     self.tracks_ = tracks
                     print("Start following the person with ID: ", self.unique_id)
