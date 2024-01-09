@@ -93,12 +93,13 @@ class Tracker:
 
 
     def keypoints_utils(self, frame, results):
-        idx = 0
+        
         keypoints_tensor = results[0].keypoints.data.tolist()
+        
         yolo_bboxes, yolo_scores, yolo_classes = self.bbx_utils(results)
-        tracks = self.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+        self.tracks_ = self.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
-        for kps, track in zip(keypoints_tensor, tracks):
+        for kps, track in zip(keypoints_tensor, self.tracks_):
             try:
                 right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
                 left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
@@ -111,7 +112,6 @@ class Tracker:
 
                 if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
                     self.unique_id = track.track_id
-                    self.tracks_ = tracks
                     print("Start following the person with ID: ", self.unique_id)
 
                 if left_angle is not None and left_angle > 70 and left_angle < 95 and track.track_id == self.unique_id:
@@ -123,7 +123,6 @@ class Tracker:
             except:
                 pass
             
-            idx +=1
 
 
 
