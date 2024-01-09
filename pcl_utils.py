@@ -25,7 +25,7 @@ class Pcl_utils():
         distance = depth.get_distance(x, y)
         intrinsics = depth.get_profile().as_video_stream_profile().get_intrinsics()
         pcd = rs.rs2_deproject_pixel_to_point(intrinsics, upixel, distance)
-        return pcd[2], -pcd[0], -pcd[1]
+        return pcd[2], -pcd[0], -pcd[1] # ros coordinates X,Y,Z
     
     def dis_fun(self, pcd):
         return math.hypot(pcd[0],pcd[1]) # x,y
@@ -102,7 +102,9 @@ class Pcl_utils():
                     cv2.circle(frame, (x_int, y_int), radius=1, color=(0, 255, 0), thickness=-1)
                     try:
                         obstracle_distance = self.convert_pixel_to_distance(depth, x_int, y_int)
-                        print(i,j, "obstracle_distance ---> ",obstracle_distance)
+                        obstracle_pcd = self.convert_pixel_to_3d_world(depth, x_int, y_int)
+                        print(i,j, "obstracle_distance ---> ",obstracle_distance, "pcd --> ", obstracle_pcd)
+                        
                         if(obstracle_distance < self.obstracle_distance_th):
                             self.stop_flag = True
                             
