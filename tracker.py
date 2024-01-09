@@ -6,6 +6,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
+class Keypoints:
+    def __init__(self, frame, hip, shoulder, elbow):
+        self.hip = hip
+        self.shoulder = shoulder
+        self.elbow = elbow
+
+        kps = [hip, shoulder, elbow]
+        self.draw_kp(frame, kps)
+        
+    
+    def draw_kp(self, frame, kps):
+        for kp in kps:
+            x = int(kp[0])
+            y = int(kp[1])
+            cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+    
+
 class Tracker:
     tracker = None
     encoder = None
@@ -44,31 +61,16 @@ class Tracker:
             cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
         return self.tracker.tracks
     
-    def draw_kp(self, frame, kp):
-        x = int(kp[0])
-        y = int(kp[1])
-        cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+    
+
 
     def keypoints_utils(self, frame, results):
         keypoints_tensor = results[0].keypoints.data.tolist()
 
         for kps in keypoints_tensor:
-            right_hip = kps[12]
-            right_shoulder = kps[6]
-            right_elbow = kps[8]
 
-            left_hip = kps[11]
-            left_shoulder = kps[5]
-            left_elbow = kps[7]
-
-            self.draw_kp(frame, right_hip)
-            self.draw_kp(frame, right_shoulder)
-            self.draw_kp(frame, right_elbow)
-
-            self.draw_kp(frame, left_hip)
-            self.draw_kp(frame, left_shoulder)
-            self.draw_kp(frame, left_elbow)
-
+            right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
+            left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
 
             
 
