@@ -17,6 +17,7 @@ class RealSenseYoloHandTracker:
 
         self.target_track_ID = None
         self.hand_distance_th = 1.0
+        self.track_id_ = None
 
         self.pcl_uts = Pcl_utils()
     
@@ -56,9 +57,22 @@ class RealSenseYoloHandTracker:
             self.tracker.keypoints_utils(frame, yolo_results)
 
             track_idx = self.tracker.tracking_index
-            if track_idx is not None:
+
+            if track_idx is not None and self.track_id_ is None:
                 yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_util(yolo_results, track_idx)
                 tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+                for track in tracks:
+                    self.track_id_ = track.track_id
+            
+            if self.track_id_ is not None:
+                yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
+                tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+                for track in tracks:
+                    if(track.track_id == self.track_id_):
+                        self.tracker.draw_bbx(track, frame)
+                        
+
+            track_idx = None
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
