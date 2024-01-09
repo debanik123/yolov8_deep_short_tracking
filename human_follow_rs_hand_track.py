@@ -3,7 +3,6 @@ import numpy as np
 import pyrealsense2 as rs
 from ultralytics import YOLO
 from tracker import Tracker
-import mediapipe as mp
 from pcl_utils import Pcl_utils
 
 class RealSenseYoloHandTracker:
@@ -18,9 +17,7 @@ class RealSenseYoloHandTracker:
 
         self.target_track_ID = None
         self.hand_distance_th = 1.0
-        # Initialize MediaPipe Hand Tracking
-        self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands()
+        
         self.pcl_uts = Pcl_utils()
     
     
@@ -59,7 +56,7 @@ class RealSenseYoloHandTracker:
             
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
             tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
-            
+
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
