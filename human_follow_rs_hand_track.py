@@ -71,8 +71,10 @@ class RealSenseYoloHandTracker:
 
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
-            for r in yolo_results:
-                print(r.keypoints.data)
+            self.tracker.keypoints_utils(frame, yolo_results)
+            # print(yolo_results[0].keypoints.data.tolist())
+            # for r in yolo_results:
+            #     print(r.keypoints.data)
             
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
             tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)

@@ -44,6 +44,18 @@ class Tracker:
             cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
         return self.tracker.tracks
 
+    def keypoints_utils(self, frame, results):
+        keypoints_tensor = results[0].keypoints.data.tolist()
+
+        for kps in keypoints_tensor:
+            for kp in kps:
+                print(kp)
+                x = int(kp[0])
+                y = int(kp[1])
+                cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+
+        # for res in results[0].keypoints.data.tolist():
+        #     print(res)
     
     def bbx_utils(self, results):
         bboxes = []
