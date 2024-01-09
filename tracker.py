@@ -60,6 +60,9 @@ class Tracker:
         cmap = plt.get_cmap('tab20b') #initialize color map
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
         self.detection_threshold = 0.80
+        self.tracking_activate = False
+        self.tracking_index = None
+
 
     def update(self, frame, bboxes, scores, classes):
         features = self.encoder(frame, bboxes)
@@ -87,14 +90,33 @@ class Tracker:
 
     def keypoints_utils(self, frame, results):
         keypoints_tensor = results[0].keypoints.data.tolist()
+        idx = 0
         for kps in keypoints_tensor:
             right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
-            right_angle = right_kps.distance()
-            print("Right angle between hip, shoulder, and elbow:", right_angle)
-
             left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
-            left_angle = left_kps.distance()
-            print("Left angle between hip, shoulder, and elbow:", left_angle)
+
+            try:
+                right_angle = right_kps.distance()
+                left_angle = left_kps.distance()
+
+                # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
+                # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
+
+                if right_angle is not None and right_angle > 70 and right_angle < 95:
+                    self.tracking_activate = True
+                    self.tracking_index = idx
+
+
+                if left_angle is not None and left_angle > 70 and left_angle < 95:
+                    self.tracking_activate = False
+                    self.tracking_index = None
+
+            except:
+                pass
+            
+            idx +=1
+
+
 
             
 

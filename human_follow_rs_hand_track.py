@@ -17,7 +17,7 @@ class RealSenseYoloHandTracker:
 
         self.target_track_ID = None
         self.hand_distance_th = 1.0
-        
+
         self.pcl_uts = Pcl_utils()
     
     
@@ -52,8 +52,10 @@ class RealSenseYoloHandTracker:
 
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
+
             self.tracker.keypoints_utils(frame, yolo_results)
             
+
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
             tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
