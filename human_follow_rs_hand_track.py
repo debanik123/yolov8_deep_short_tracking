@@ -53,17 +53,22 @@ class RealSenseYoloHandTracker:
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
 
-            self.tracker.keypoints_utils(frame, yolo_results)
+            try:
 
-            if self.tracker.unique_id is not None:
-                for track in self.tracker.tracks_:
-                    if track.track_id == self.tracker.unique_id:
-                        self.tracker.isFollowing = True
-                        self.tracker.draw_bbx(track, frame)
-                        
-                    else:
-                        self.tracker.unique_id = None
-                
+                self.tracker.keypoints_utils(frame, yolo_results)
+
+                if self.tracker.unique_id is not None:
+                    for track in self.tracker.tracks_:
+                        if track.track_id == self.tracker.unique_id:
+                            self.tracker.isFollowing = True
+                            self.tracker.draw_bbx(track, frame)
+
+                        else:
+                            self.tracker.unique_id = None
+            
+            except:
+                self.tracker.unique_id = None
+                self.isFollowing = False
 
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
