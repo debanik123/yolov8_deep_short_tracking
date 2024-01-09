@@ -150,4 +150,32 @@ class Tracker:
                 classes.append(label)
                 scores.append(score)
         return (bboxes, classes, scores)
+    
+    def bbx_util(self, yolo_results, track_idx):
+        bboxes = []
+        classes = []
+        scores = []
+        class_names = ['person']
+
+        res = yolo_results[0].boxes.data.tolist()[track_idx]
+        x1 = int(res[0])
+        y1 = int(res[1])
+        x2 = int(res[2])
+        y2 = int(res[3])
+        score = res[4]
+        class_id = int(res[5])
+
+        label = class_names[class_id]
+        # cv2.rectangle(frame, (x1, y1), (x2,y2), (0,255,0), 2)
+
+        w = (x2-x1)
+        h = (y2-y1)
+
+        box = [x1,y1,w,h]
+        # print("box ---> ",box)
+        if(score > self.detection_threshold):
+            bboxes.append(box)
+            classes.append(label)
+            scores.append(score)
+        return (bboxes, classes, scores)
 

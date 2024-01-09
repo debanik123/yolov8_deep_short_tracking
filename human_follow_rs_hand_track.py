@@ -54,10 +54,11 @@ class RealSenseYoloHandTracker:
             yolo_results = self.model.predict(frame, classes=[0])
 
             self.tracker.keypoints_utils(frame, yolo_results)
-            
 
-            yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
-            tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+            track_idx = self.tracker.tracking_index
+            if track_idx is not None:
+                yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_util(yolo_results, track_idx)
+                tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
