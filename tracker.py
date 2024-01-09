@@ -61,8 +61,9 @@ class Tracker:
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
         self.detection_threshold = 0.80
         self.tracking_activate = False
-        self.tracking_index = None
-
+        self.human_index = None
+        self.target_track_ID = None
+        self.tracks_ = None
 
     def update(self, frame, bboxes, scores, classes):
         features = self.encoder(frame, bboxes)
@@ -73,6 +74,8 @@ class Tracker:
         for track in self.tracker.tracks:  # update new findings AKA tracks
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
+            
+            # self.draw_bbx(track, frame)
 
         return self.tracker.tracks
     
@@ -90,9 +93,12 @@ class Tracker:
 
 
     def keypoints_utils(self, frame, results):
-        keypoints_tensor = results[0].keypoints.data.tolist()
         idx = 0
-        for kps in keypoints_tensor:
+        keypoints_tensor = results[0].keypoints.data.tolist()
+        yolo_bboxes, yolo_scores, yolo_classes = self.bbx_utils(results)
+        tracks = self.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+
+        for kps, track in zip(keypoints_tensor, tracks):
             right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
             left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
 
@@ -105,12 +111,14 @@ class Tracker:
 
                 if right_angle is not None and right_angle > 70 and right_angle < 95:
                     self.tracking_activate = True
-                    self.tracking_index = idx
-
+                    self.target_track_ID = track.track_id
+                    print("track id -----> ",track.track_id)
+                    self.tracks_ = tracks
 
                 if left_angle is not None and left_angle > 70 and left_angle < 95:
                     self.tracking_activate = False
-                    self.tracking_index = None
+                    self.target_track_ID = None
+                    self.tracks_ = None
 
             except:
                 pass
@@ -123,7 +131,7 @@ class Tracker:
 
         # for res in results[0].keypoints.data.tolist():
         #     print(res)
-    
+
     def bbx_utils(self, results):
         bboxes = []
         classes = []
@@ -150,33 +158,4 @@ class Tracker:
                 bboxes.append(box)
                 classes.append(label)
                 scores.append(score)
-        return (bboxes, classes, scores)
-    
-    def bbx_util(self, yolo_results, track_idx):
-        bboxes = []
-        classes = []
-        scores = []
-        class_names = ['person']
-
-        res = yolo_results[0].boxes.data.tolist()[track_idx]
-        x1 = int(res[0])
-        y1 = int(res[1])
-        x2 = int(res[2])
-        y2 = int(res[3])
-        score = res[4]
-        class_id = int(res[5])
-
-        label = class_names[class_id]
-        # cv2.rectangle(frame, (x1, y1), (x2,y2), (0,255,0), 2)
-
-        w = (x2-x1)
-        h = (y2-y1)
-
-        box = [x1,y1,w,h]
-        # print("box ---> ",box)
-        if(score > self.detection_threshold):
-            bboxes.append(box)
-            classes.append(label)
-            scores.append(score)
-        return (bboxes, classes, scores)
-
+        return (bboxes, scores, classes)
