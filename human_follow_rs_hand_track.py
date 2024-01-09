@@ -49,8 +49,13 @@ class RealSenseYoloHandTracker:
             y_min = min(y_min, y)
             x_max = max(x_max, x)
             y_max = max(y_max, y)
+
+        mid_x = (x_min + x_max) // 2
+        mid_y = (y_min + y_max) // 2
+        
         # Draw the rectangle
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        cv2.circle(frame, (mid_x, mid_y), radius=5, color=(255, 0, 0), thickness=-1)
 
     def hand_tracking(self, frame):
         # MediaPipe Hand Tracking
