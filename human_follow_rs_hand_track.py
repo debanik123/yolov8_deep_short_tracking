@@ -63,23 +63,34 @@ class RealSenseYoloHandTracker:
 
             if not color_frame:
                 continue
-            
-            
+
             frame = np.asanyarray(color_frame.get_data())
+
+            if depth_frame:
+                self.pcl_uts.obstracle_layer(depth_frame, frame)
 
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
             tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
-            
-            tracks_size = len(tracks)
-            print("Number of tracks:", tracks_size)
 
-            # MediaPipe Hand Tracking
-            finger_count = self.hand_tracking(frame)
-            cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            if depth_frame:
-                self.pcl_uts.obstracle_layer(depth_frame, frame)
+            tracks_size = len(tracks)
+            # print("Number of tracks:", tracks_size)
+
+            for track in tracks:
+                try:
+                    bbox = track.to_tlbr()
+                    track_id = track.track_id
+                    x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+                    hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
+                    finger_count = self.hand_tracking(hand_tracking_frame)
+                    print("Tracker ID: {}, Finger_count : {}".format(track_id, finger_count))
+
+                except Exception as e:
+                        print(f"Error: {e}")
+
+                # cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 

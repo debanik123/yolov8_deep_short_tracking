@@ -35,7 +35,6 @@ class Tracker:
             bbox = track.to_tlbr()
             class_name = track.get_class()
             track_id = track.track_id
-            # print("Tracker ID: {}, Class: {}".format(track_id, class_name))
 
             color = self.colors[int(track.track_id) % len(self.colors)]  # draw bbox on screen
             color = [i * 255 for i in color]
