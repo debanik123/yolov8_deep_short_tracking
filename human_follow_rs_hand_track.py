@@ -55,12 +55,14 @@ class RealSenseYoloHandTracker:
 
             self.tracker.keypoints_utils(frame, yolo_results)
 
-            if self.tracker.target_track_ID is not None:
+            if self.tracker.unique_id is not None:
                 for track in self.tracker.tracks_:
-                    if track.track_id == self.tracker.target_track_ID:
+                    if track.track_id == self.tracker.unique_id:
+                        self.tracker.isFollowing = True
                         self.tracker.draw_bbx(track, frame)
+                        
                     else:
-                        self.tracker.target_track_ID = None
+                        self.tracker.unique_id = None
                 
 
 
