@@ -43,16 +43,34 @@ class Tracker:
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
             cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
         return self.tracker.tracks
+    
+    def draw_kp(self, frame, kp):
+        x = int(kp[0])
+        y = int(kp[1])
+        cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
 
     def keypoints_utils(self, frame, results):
         keypoints_tensor = results[0].keypoints.data.tolist()
 
         for kps in keypoints_tensor:
-            for kp in kps:
-                print(kp)
-                x = int(kp[0])
-                y = int(kp[1])
-                cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+            right_hip = kps[12]
+            right_shoulder = kps[6]
+            right_elbow = kps[8]
+
+            left_hip = kps[11]
+            left_shoulder = kps[5]
+            left_elbow = kps[7]
+
+            self.draw_kp(frame, right_hip)
+            self.draw_kp(frame, right_shoulder)
+            self.draw_kp(frame, right_elbow)
+
+            self.draw_kp(frame, left_hip)
+            self.draw_kp(frame, left_shoulder)
+            self.draw_kp(frame, left_elbow)
+
+
+            
 
         # for res in results[0].keypoints.data.tolist():
         #     print(res)
