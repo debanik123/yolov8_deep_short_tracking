@@ -64,6 +64,8 @@ class RealSenseYoloHandTracker:
 
                     else:
                         self.tracker.unique_id = None
+                        self.isFollowing = False
+            
             
 
 

@@ -109,7 +109,7 @@ class Tracker:
                 # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
                 # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
-                if right_angle is not None and right_angle > 70 and right_angle < 95:
+                if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
                     self.unique_id = track.track_id
                     self.tracks_ = tracks
                     print("Start following the person with ID: ", self.unique_id)
