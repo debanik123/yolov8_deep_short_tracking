@@ -40,8 +40,6 @@ class RealSenseYoloHandTracker:
         count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
         return count
         
-
-
     def hand_tracking(self, frame, depth):
         # MediaPipe Hand Tracking
         h, w, _ = frame.shape
