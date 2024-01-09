@@ -35,22 +35,6 @@ class RealSenseYoloHandTracker:
         # Start streaming
         self.pipeline.start(self.config)
 
-    def count_fingers(self, hand_landmarks):
-        fingertips = [8, 12, 16, 20]
-        count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
-        return count
-        
-    def hand_tracking(self, frame, depth):
-        # MediaPipe Hand Tracking
-        h, w, _ = frame.shape
-        results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                finger_count = self.count_fingers(hand_landmarks)
-                return finger_count
-        else:
-            return 0.0
-
     def follow_target(self, target_track_ID):
         # Add your logic to follow the target based on the track ID
         print(f"Following target with Track ID: {target_track_ID}")
@@ -72,41 +56,10 @@ class RealSenseYoloHandTracker:
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
             self.tracker.keypoints_utils(frame, yolo_results)
-            # print(yolo_results[0].keypoints.data.tolist())
-            # for r in yolo_results:
-            #     print(r.keypoints.data)
             
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
             tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
-
-            tracks_size = len(tracks)
-            # print("Number of tracks:", tracks_size)
-
-            for track in tracks:
-                try:
-                    bbox = track.to_tlbr()
-                    track_id = track.track_id
-                    x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
-                    hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
-                    finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
-                    # print("Tracker ID: {}, Finger_count : {}".format(track_id, finger_count))
-
-                    if (finger_count == 1):
-                        # start follow me with Tracker ID
-                        self.target_track_ID = track_id
-
-                    elif (finger_count == 2):
-                        # stop follow me with Tracker ID
-                        self.target_track_ID = None
-
-                except Exception as e:
-                        print(f"Error: {e}")
             
-            if self.target_track_ID is not None:
-                self.follow_target(self.target_track_ID)
-                cv2.putText(frame, f"Following target: {self.target_track_ID}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
-
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
