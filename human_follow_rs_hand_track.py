@@ -15,11 +15,11 @@ class RealSenseYoloHandTracker:
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
         self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+
+        self.target_track_ID = None
         # Initialize MediaPipe Hand Tracking
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands()
-
-        
         self.pcl_uts = Pcl_utils()
     
     
@@ -38,6 +38,19 @@ class RealSenseYoloHandTracker:
         fingertips = [8, 12, 16, 20]
         count = sum(1 for fingertip in fingertips if hand_landmarks.landmark[fingertip].y < hand_landmarks.landmark[fingertip - 2].y)
         return count
+    
+    def draw_hand_rectangle(self, frame, landmarks):
+        h, w, _ = frame.shape
+        x_min, y_min, x_max, y_max = w, h, 0, 0
+
+        for landmark in landmarks.landmark:
+            x, y = int(landmark.x * w), int(landmark.y * h)
+            x_min = min(x_min, x)
+            y_min = min(y_min, y)
+            x_max = max(x_max, x)
+            y_max = max(y_max, y)
+        # Draw the rectangle
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
     def hand_tracking(self, frame):
         # MediaPipe Hand Tracking
@@ -46,6 +59,7 @@ class RealSenseYoloHandTracker:
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 if results.multi_handedness[0].classification[0].label == 'Left':
+                    self.draw_hand_rectangle(frame, hand_landmarks)
                     finger_count = self.count_fingers(hand_landmarks)
                     return finger_count
                 else:
@@ -53,7 +67,9 @@ class RealSenseYoloHandTracker:
         else:
             return 0
 
-
+    def follow_target(self, target_track_ID):
+        # Add your logic to follow the target based on the track ID
+        print(f"Following target with Track ID: {target_track_ID}")
 
     def run(self):
         while True:
@@ -84,12 +100,22 @@ class RealSenseYoloHandTracker:
                     x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
                     hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
                     finger_count = self.hand_tracking(hand_tracking_frame)
-                    print("Tracker ID: {}, Finger_count : {}".format(track_id, finger_count))
+                    # print("Tracker ID: {}, Finger_count : {}".format(track_id, finger_count))
+
+                    if (finger_count == 1):
+                        # start follow me with Tracker ID
+                        self.target_track_ID = track_id
+
+                    elif (finger_count == 2):
+                        # stop follow me with Tracker ID
+                        self.target_track_ID = None
 
                 except Exception as e:
                         print(f"Error: {e}")
-
-                # cv2.putText(frame, f"Finger Count: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
+            if self.target_track_ID is not None:
+                self.follow_target(self.target_track_ID)
+                cv2.putText(frame, f"Following target: {self.target_track_ID}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             
 
             cv2.imshow("YOLOv8 and MediaPipe Hand Tracking", frame)
