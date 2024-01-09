@@ -15,3 +15,4 @@
 !/human_follow_rs_hand_track.py
 !/pcl_utils.py
 !/hand_tracking_test.py
+!/human_pose_detection.py
