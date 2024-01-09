@@ -5,6 +5,7 @@ from tracking_helpers import read_class_names, create_box_encoder
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+import math
 
 class Keypoints:
     def __init__(self, frame, hip, shoulder, elbow):
@@ -14,13 +15,33 @@ class Keypoints:
 
         kps = [hip, shoulder, elbow]
         self.draw_kp(frame, kps)
-        
+        # self.distance()
     
     def draw_kp(self, frame, kps):
         for kp in kps:
             x = int(kp[0])
             y = int(kp[1])
             cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+
+    def distance(self):
+        distance_hip_shoulder = math.sqrt((self.hip[0]-self.shoulder[0])**2 + (self.hip[1]-self.shoulder[1])**2)
+        distance_hip_elbow = math.sqrt((self.hip[0]-self.elbow[0])**2 + (self.hip[1]-self.elbow[1])**2)
+        distance_shoulder_elbow = math.sqrt((self.shoulder[0]-self.elbow[0])**2 + (self.shoulder[1]-self.elbow[1])**2)
+
+        gamma = self.cosine(distance_hip_shoulder, distance_shoulder_elbow, distance_hip_elbow)
+        if gamma is not None:
+            angle = math.degrees(gamma)
+            return angle
+        else:
+            return None
+
+    
+    def cosine(self, a, b, c):
+        if a == 0.0 or b == 0.0:
+            return None
+        else:
+            return math.acos((a**2 + b**2 - c**2) / (2 * a * b))
+        
     
 
 class Tracker:
@@ -66,11 +87,14 @@ class Tracker:
 
     def keypoints_utils(self, frame, results):
         keypoints_tensor = results[0].keypoints.data.tolist()
-
         for kps in keypoints_tensor:
-
             right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
+            right_angle = right_kps.distance()
+            print("Right angle between hip, shoulder, and elbow:", right_angle)
+
             left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
+            left_angle = left_kps.distance()
+            print("Left angle between hip, shoulder, and elbow:", left_angle)
 
             
 
