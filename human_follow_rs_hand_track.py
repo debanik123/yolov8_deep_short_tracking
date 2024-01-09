@@ -70,7 +70,10 @@ class RealSenseYoloHandTracker:
             # YOLO Hand Tracking
             yolo_results = self.model.predict(frame, classes=[0])
             yolo_bboxes, yolo_classes, yolo_scores = self.tracker.bbx_utils(yolo_results)
-            self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+            tracks = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+            
+            tracks_size = len(tracks)
+            print("Number of tracks:", tracks_size)
 
             # MediaPipe Hand Tracking
             finger_count = self.hand_tracking(frame)
