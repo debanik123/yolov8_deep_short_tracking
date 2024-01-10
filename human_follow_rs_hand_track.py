@@ -7,7 +7,7 @@ from pcl_utils import Pcl_utils
 import mediapipe as mp
 
 class RealSenseYoloHandTracker:
-    def __init__(self, yolo_weights_path='weights/yolov8n-pose.pt'):
+    def __init__(self, yolo_weights_path='weights/yolov8n.pt'):
         self.model = YOLO(yolo_weights_path)
         self.tracker = Tracker()
         self.check_camera_connection()
