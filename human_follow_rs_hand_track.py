@@ -175,7 +175,7 @@ class RealSenseFollowme(Node):
                     elif self.unique_id is None:
                         # stop the robot
                         self.isFollowing = False
-                        # self.stop_robot()
+                        self.stop_robot()
 
             except Exception as e:
                 # handle the exception and print information

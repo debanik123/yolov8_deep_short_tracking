@@ -74,9 +74,9 @@ class Pcl_utils():
             
             
         
-        else:
-            self.linear_x = 0.0
-            self.angular_z = 0.0
+        # else:
+        #     self.linear_x = 0.0
+        #     self.angular_z = 0.0
 
 
         
