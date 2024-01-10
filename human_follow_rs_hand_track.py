@@ -128,6 +128,7 @@ class RealSenseFollowme(Node):
             track_ids = []
             if self.unique_id not in track_ids:
                 self.isFollowing = False
+                self.stop_robot()
 
             try:
                 yolo_results = self.model.predict(frame, classes=[0])
@@ -168,11 +169,13 @@ class RealSenseFollowme(Node):
                         # print(self.pcl_uts.linear_x, self.pcl_uts.angular_z)
                         linear_x_str = "{:.3f}".format(self.pcl_uts.linear_x)
                         angular_z_str = "{:.3f}".format(self.pcl_uts.angular_z)
+                        self.cmd_vel(float(linear_x_str), float(angular_z_str))
                         cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(int(x_mid), int(y_mid+50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                     elif self.unique_id is None:
                         # stop the robot
                         self.isFollowing = False
+                        self.stop_robot()
 
             except Exception as e:
                 # handle the exception and print information
