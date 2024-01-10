@@ -9,6 +9,7 @@ import mediapipe as mp
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
+import math
 
 
 class RealSenseFollowme(Node):
@@ -19,8 +20,8 @@ class RealSenseFollowme(Node):
         self.check_camera_connection()
         self.pipe = rs.pipeline()
         self.config = rs.config()
-        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
 
@@ -109,6 +110,17 @@ class RealSenseFollowme(Node):
         cmd_vel_msg.angular.y = 0.0
         cmd_vel_msg.angular.z = a_v
         self.cmd_vel_pub.publish(cmd_vel_msg)
+    
+    def calculate_angle(self, ref_point, target_midpoint):
+        x1, y1 = ref_point
+        x2, y2 = target_midpoint
+        
+        delta_x = x2 - x1
+        delta_y = y2 - y1
+
+        angle_rad = math.atan2(delta_y, delta_x)
+        # angle_deg = math.degrees(angle_rad)
+        return angle_rad
         
     def run(self):
         while True:
@@ -120,7 +132,7 @@ class RealSenseFollowme(Node):
                 continue
 
             frame = np.asanyarray(color_frame.get_data())
-            im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
+            
 
             if depth_frame:
                 self.pcl_uts.obstracle_layer(depth_frame, frame)
@@ -163,9 +175,15 @@ class RealSenseFollowme(Node):
 
                     if self.unique_id is not None and self.unique_id == track.track_id:
                         self.isFollowing = True
-                        hm_midpoint = (int(x_mid), int(y_mid))
-                        cv2.putText(frame, "follow_"+str(self.unique_id),(int(x_mid), int(y_mid-11)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
+                        hm_midpoint = (int(x_mid), int(frame.shape[0] // 2.0))
+                        im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
+
                         cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
+                        cv2.putText(frame, "follow_"+str(self.unique_id),(int(x_mid), int(y_mid-11)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
+
+                        # angle_rad = self.calculate_angle(im_midpoint, hm_midpoint)
+                        # cv2.putText(frame, str(angle_rad),(int(x_mid), int(y_mid+50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+
                         self.pcl_uts.target_gp(depth_frame, im_midpoint, hm_midpoint)
 
                         # print(self.pcl_uts.linear_x, self.pcl_uts.angular_z)
@@ -174,6 +192,9 @@ class RealSenseFollowme(Node):
                         self.cmd_vel(self.pcl_uts.linear_x, self.pcl_uts.angular_z)
                         cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(int(x_mid), int(y_mid+50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
+                        
+                        
+
                     elif self.unique_id is None:
                         # stop the robot
                         self.isFollowing = False
@@ -181,8 +202,8 @@ class RealSenseFollowme(Node):
 
             except Exception as e:
                 # handle the exception and print information
-                # print(f"Error: {e}")
-                pass
+                print(f"Error: {e}")
+                # pass
             
             rclpy.spin_once(self, timeout_sec=0.0000001)
 
