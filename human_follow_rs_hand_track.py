@@ -115,14 +115,19 @@ class RealSenseYoloHandTracker:
                     if human_distance<self.hand_distance_th:
                         hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
                         finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
-                        if finger_count == 2:
+                        if finger_count == 2 and not self.isFollowing:
                             self.unique_id = track.track_id
-                        if finger_count == 3:
+                        if finger_count == 3 and self.unique_id == track.track_id:
                             self.unique_id = None
+                            self.isFollowing = False
 
-                    if self.unique_id == track.track_id:
+                    if self.unique_id is not None and self.unique_id == track.track_id:
+                        self.isFollowing = True
                         cv2.putText(frame, "follow_"+str(self.unique_id),(int(x_mid), int(y_mid-11)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
 
+                    elif self.unique_id is None:
+                        # stop the robot
+                        self.isFollowing = False
 
             except:
                 pass
