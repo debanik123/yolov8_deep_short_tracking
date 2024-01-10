@@ -91,6 +91,7 @@ class RealSenseYoloHandTracker:
                 continue
 
             frame = np.asanyarray(color_frame.get_data())
+            im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
 
             if depth_frame:
                 self.pcl_uts.obstracle_layer(depth_frame, frame)
@@ -129,13 +130,21 @@ class RealSenseYoloHandTracker:
 
                     if self.unique_id is not None and self.unique_id == track.track_id:
                         self.isFollowing = True
+                        hm_midpoint = (int(x_mid), int(y_mid))
                         cv2.putText(frame, "follow_"+str(self.unique_id),(int(x_mid), int(y_mid-11)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
+                        cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
+                        self.pcl_uts.target_gp(depth_frame, im_midpoint, hm_midpoint)
+
+                        # linear_x, angular_z = self.pcl_uts.vel_gen(gpx, gpy)
+                        # cv2.putText(frame, "linear_x: "+str(linear_x)+" angular_z: "+str(angular_z),(int(x_mid), int(y_mid+50)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
 
                     elif self.unique_id is None:
                         # stop the robot
                         self.isFollowing = False
 
-            except:
+            except Exception as e:
+                # handle the exception and print information
+                # print(f"Error: {e}")
                 pass
             
 

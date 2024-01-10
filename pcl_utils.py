@@ -14,6 +14,9 @@ class Pcl_utils():
         self.num_point_obs = 10
         self.obstracle_distance_th = 1.0
         self.stop_flag = False
+        self.desiredDistance = 1.0
+        self.vel_max = 1.5
+        self.speed_ = 0.85
 
     def convert_pixel_to_distance(self, depth, x, y):
         upixel = np.array([float(x), float(y)], dtype=np.float32)
@@ -32,7 +35,7 @@ class Pcl_utils():
     
     def cosine(self, a, b, c):
         if a == 0.0 or b == 0.0:
-            return float('nan')
+            return None
         else:
             return math.acos((a**2 + b**2 - c**2) / (2 * a * b))
 
@@ -46,6 +49,7 @@ class Pcl_utils():
     def target_gp(self, depth_frame, refe_point, target_point):
         refe_point_pcd = self.convert_pixel_to_3d_world(depth_frame, refe_point[0], refe_point[1])
         target_point_pcd = self.convert_pixel_to_3d_world(depth_frame, target_point[0], target_point[1])
+        # print(refe_point_pcd, target_point_pcd)
         self.find_gpxy(refe_point_pcd, target_point_pcd)
     
     def find_gpxy(self, refe_point_pcd, target_point_pcd):
@@ -56,25 +60,27 @@ class Pcl_utils():
         gamma = self.cosine(dis_refe_pcd, dis_targ_pcd, dis_refe_targ_pcd)
         gamma_corr = self.gamma_sign_correction(gamma, target_point_pcd[1])
 
-        gpx = dis_targ_pcd*math.cos(gamma_corr)
-        gpy = dis_targ_pcd*math.sin(gamma_corr)
-
-        self.vel_gen(gpx, gpy)
-        
-    def vel_gen(self, x, y):
-        if math.isfinite(x) and math.isfinite(y):
-            currentDistance = math.hypot(x,y)
+        if gamma is not None:
+            gpx = dis_targ_pcd*math.cos(gamma_corr)
+            gpy = dis_targ_pcd*math.sin(gamma_corr)
+            currentDistance = math.hypot(gpx, gpy)
             error = abs(self.desiredDistance - currentDistance)
             l_v = error * self.speed_
             linear_x = min(l_v, self.vel_max)
-            angular_z = math.atan2(y, x)
-            # self.cmd_vel(linear_x, angular_z)
-            # print("linearX --> ", linear_x, "angilar_z ---> ", angular_z)
-            return linear_x, angular_z
-        else:
-            linear_x = 0.0
-            angular_z = 0.0
-            return linear_x, angular_z
+            angular_z = math.atan2(gpy, gpx)
+            
+            print(linear_x, angular_z)
+
+
+        
+    # def vel_gen(self, x, y):
+    #     currentDistance = math.hypot(x,y)
+    #     print("currentDistance: -> ", currentDistance)
+    #     error = abs(self.desiredDistance - currentDistance)
+    #     l_v = error * self.speed_
+    #     linear_x = min(l_v, self.vel_max)
+    #     angular_z = math.atan2(y, x)
+    #     return linear_x, angular_z
 
     def calculate_pix_distance(self, point1, point2):
         dx = point2[0] - point1[0]
