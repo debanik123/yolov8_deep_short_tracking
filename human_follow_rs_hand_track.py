@@ -133,8 +133,10 @@ class RealSenseFollowme(Node):
             try:
                 yolo_results = self.model.predict(frame, classes=[0])
 
-                yolo_bboxes, yolo_scores, yolo_classes =self.tracker.bbx_utils(yolo_results)
+                yolo_bboxes, yolo_scores, yolo_classes =self.tracker.bbx_utils(yolo_results, depth_frame)
+
                 self.tracks_ = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+                
 
                 
                 for track in self.tracks_:

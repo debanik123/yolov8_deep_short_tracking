@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import math
+from pcl_utils import Pcl_utils
 
 class Keypoints:
     def __init__(self, frame, hip, shoulder, elbow):
@@ -60,6 +61,8 @@ class Tracker:
         cmap = plt.get_cmap('tab20b') #initialize color map
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
         self.detection_threshold = 0.80
+        self.pcl_uts = Pcl_utils()
+        self.human_distance_th=6.0
         
 
     def update(self, frame, bboxes, scores, classes):
@@ -88,7 +91,7 @@ class Tracker:
         cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
         cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
    
-    def bbx_utils(self, results):
+    def bbx_utils(self, results, depth_frame):
         bboxes = []
         classes = []
         scores = []
@@ -109,10 +112,16 @@ class Tracker:
             h = (y2-y1)
 
             box = [x1,y1,w,h]
+
+            x_mid = (x1 + x2) //2
+            y_mid = (y1 + y1) //2
+            human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
+
             # print("box ---> ",box)
-            if(score > self.detection_threshold):
+            if(human_distance < self.human_distance_th and score > self.detection_threshold):
                 bboxes.append(box)
                 classes.append(label)
                 scores.append(score)
+
         return (bboxes, scores, classes)
     
