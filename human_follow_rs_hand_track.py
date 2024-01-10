@@ -117,7 +117,8 @@ class RealSenseYoloHandTracker:
                     y_mid = (y_min + y_max) //2
                     cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 255), thickness=-1)
                     human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
-                    cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                    human_distance_str = "{:.3f}".format(human_distance)
+                    cv2.putText(frame, human_distance_str,(int(x_mid), int(y_mid-50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                     if human_distance<self.hand_distance_th:
                         hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
@@ -135,10 +136,10 @@ class RealSenseYoloHandTracker:
                         cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
                         self.pcl_uts.target_gp(depth_frame, im_midpoint, hm_midpoint)
 
-                        print(self.pcl_uts.linear_x, self.pcl_uts.angular_z)
+                        # print(self.pcl_uts.linear_x, self.pcl_uts.angular_z)
                         linear_x_str = "{:.3f}".format(self.pcl_uts.linear_x)
                         angular_z_str = "{:.3f}".format(self.pcl_uts.angular_z)
-                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(int(x_mid), int(y_mid+50)),0, 1.0, (0,0,255),1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(int(x_mid), int(y_mid+50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                     elif self.unique_id is None:
                         # stop the robot
