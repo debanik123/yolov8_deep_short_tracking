@@ -93,30 +93,29 @@ class RealSenseYoloHandTracker:
             if depth_frame:
                 self.pcl_uts.obstracle_layer(depth_frame, frame)
 
-            # YOLO Hand Tracking
-            yolo_results = self.model.predict(frame, classes=[0])
+            try:
+                yolo_results = self.model.predict(frame, classes=[0])
 
-            yolo_bboxes, yolo_scores, yolo_classes =self.tracker.bbx_utils(yolo_results)
-            self.tracks_ = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
+                yolo_bboxes, yolo_scores, yolo_classes =self.tracker.bbx_utils(yolo_results)
+                self.tracks_ = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
-            for track in self.tracks_:
-                self.tracker.draw_bbx(track, frame)
-                bbox = track.to_tlbr()
-                x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+                for track in self.tracks_:
+                    self.tracker.draw_bbx(track, frame)
+                    bbox = track.to_tlbr()
+                    x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
 
-                x_mid = (x_min + x_max) //2
-                y_mid = (y_min + y_max) //2
-                cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 255), thickness=-1)
-                human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
-                cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-11)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                    x_mid = (x_min + x_max) //2
+                    y_mid = (y_min + y_max) //2
+                    cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 255), thickness=-1)
+                    human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
+                    cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-11)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
-                try:
                     if human_distance<self.hand_distance_th:
                         hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
                         finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
-                
-                except:
-                    pass
+
+            except:
+                pass
             
 
 
