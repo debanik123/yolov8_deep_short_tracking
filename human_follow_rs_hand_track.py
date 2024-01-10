@@ -94,6 +94,10 @@ class RealSenseYoloHandTracker:
 
             if depth_frame:
                 self.pcl_uts.obstracle_layer(depth_frame, frame)
+            
+            track_ids = []
+            if self.unique_id not in track_ids:
+                self.isFollowing = False
 
             try:
                 yolo_results = self.model.predict(frame, classes=[0])
@@ -101,7 +105,9 @@ class RealSenseYoloHandTracker:
                 yolo_bboxes, yolo_scores, yolo_classes =self.tracker.bbx_utils(yolo_results)
                 self.tracks_ = self.tracker.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
 
+                
                 for track in self.tracks_:
+                    track_ids.append(track.track_id)
                     self.tracker.draw_bbx(track, frame)
                     bbox = track.to_tlbr()
                     x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
@@ -131,6 +137,8 @@ class RealSenseYoloHandTracker:
 
             except:
                 pass
+            
+
             
 
 
