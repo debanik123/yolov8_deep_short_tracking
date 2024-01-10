@@ -90,50 +90,7 @@ class Tracker:
         cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
         cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
         cv2.putText(frame, class_name + " : " + str(track.track_id),(int(bbox[0]), int(bbox[1]-11)),0, 0.6, (255,255,255),1, lineType=cv2.LINE_AA)
-
-
-    def keypoints_utils(self, frame, results):
-
-        keypoints_tensor = results[0].keypoints.data.tolist()
-
-        yolo_bboxes, yolo_scores, yolo_classes = self.bbx_utils(results)
-        self.tracks_ = self.update(frame, yolo_bboxes, yolo_scores, yolo_classes)
-
-        dict_ = {str(idx): track.track_id for idx, (kps, track) in enumerate(zip(keypoints_tensor, self.tracks_))}
-        print(dict_)
-
-        for idx, kps in enumerate(keypoints_tensor):
-            try:
-                right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
-                left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
-                
-                right_angle = right_kps.distance()
-                left_angle = left_kps.distance()
-
-                # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
-                # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
-
-                if right_angle is not None and right_angle > 70 and right_angle < 95:
-                    self.unique_id = dict_.get(str(idx))
-                    print("Start following the person with ID: ", self.unique_id)
-
-                if left_angle is not None and left_angle > 70 and left_angle < 95:
-                    self.isFollowing = False
-                    self.unique_id = None
-                    print("Stop following the person with ID: ", self.unique_id)
-
-
-            except:
-                pass
-            
-
-
-
-            
-
-        # for res in results[0].keypoints.data.tolist():
-        #     print(res)
-
+   
     def bbx_utils(self, results):
         bboxes = []
         classes = []
@@ -161,3 +118,4 @@ class Tracker:
                 classes.append(label)
                 scores.append(score)
         return (bboxes, scores, classes)
+    
