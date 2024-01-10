@@ -6,15 +6,23 @@ from tracker import Tracker
 from pcl_utils import Pcl_utils
 import mediapipe as mp
 
-class RealSenseYoloHandTracker:
+import rclpy
+from geometry_msgs.msg import Twist
+from rclpy.node import Node
+
+
+class RealSenseFollowme(Node):
     def __init__(self, yolo_weights_path='weights/yolov8n.pt'):
+        super().__init__('real_sense_follow_me')
         self.model = YOLO(yolo_weights_path)
         self.tracker = Tracker()
         self.check_camera_connection()
-        self.pipeline = rs.pipeline()
+        self.pipe = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
         self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+
+        self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
 
         self.hand_distance_th = 0.9
         self.track_id_ = None
@@ -34,9 +42,11 @@ class RealSenseYoloHandTracker:
         if not devices:
             raise RuntimeError("No RealSense devices found. Connect a RealSense camera and try again.")
 
-    def start(self):
-        # Start streaming
-        self.pipeline.start(self.config)
+    def start_pipeline(self):
+        self.pipe.start(self.config)
+
+    def stop_pipeline(self):
+        self.pipe.stop()
 
     def follow_target(self, target_track_ID):
         # Add your logic to follow the target based on the track ID
@@ -79,11 +89,30 @@ class RealSenseYoloHandTracker:
         cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 0), thickness=-1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
         return x_mid, y_mid
-
-
+    
+    def stop_robot(self):
+        cmd_vel_msg = Twist()
+        cmd_vel_msg.linear.x = 0.0
+        cmd_vel_msg.linear.y = 0.0
+        cmd_vel_msg.linear.z = 0.0
+        cmd_vel_msg.angular.x = 0.0
+        cmd_vel_msg.angular.y = 0.0
+        cmd_vel_msg.angular.z = 0.0
+        self.cmd_vel_pub.publish(cmd_vel_msg)
+    
+    def cmd_vel(self, l_v, a_v):
+        cmd_vel_msg = Twist()
+        cmd_vel_msg.linear.x = l_v
+        cmd_vel_msg.linear.y = 0.0
+        cmd_vel_msg.linear.z = 0.0
+        cmd_vel_msg.angular.x = 0.0
+        cmd_vel_msg.angular.y = 0.0
+        cmd_vel_msg.angular.z = a_v
+        self.cmd_vel_pub.publish(cmd_vel_msg)
+        
     def run(self):
         while True:
-            frames = self.pipeline.wait_for_frames()
+            frames = self.pipe.wait_for_frames()
             color_frame = frames.get_color_frame()
             depth_frame = frames.get_depth_frame()
 
@@ -150,6 +179,7 @@ class RealSenseYoloHandTracker:
                 # print(f"Error: {e}")
                 pass
             
+            rclpy.spin_once(self, timeout_sec=0.0000001)
 
             
 
@@ -159,17 +189,20 @@ class RealSenseYoloHandTracker:
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
-    def stop(self):
-        self.pipeline.stop()
+
+def main(args=None):
+    rclpy.init(args=args)
+    real_sense_followme = RealSenseFollowme()
+    try:
+        real_sense_followme.start_pipeline()
+        real_sense_followme.run()
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        real_sense_followme.stop_pipeline()
+        real_sense_followme.destroy_node()
         cv2.destroyAllWindows()
+        rclpy.shutdown()
 
 if __name__ == "__main__":
-    tracker = RealSenseYoloHandTracker()
-
-    try:
-        tracker.start()
-        tracker.run()
-    except RuntimeError as e:
-        print(e)
-    finally:
-        tracker.stop()
+    main()
