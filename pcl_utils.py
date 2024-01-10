@@ -18,6 +18,9 @@ class Pcl_utils():
         self.vel_max = 1.5
         self.speed_ = 0.85
 
+        self.linear_x = 0.0
+        self.angular_z = 0.0
+
     def convert_pixel_to_distance(self, depth, x, y):
         upixel = np.array([float(x), float(y)], dtype=np.float32)
         distance = depth.get_distance(x, y)
@@ -66,10 +69,14 @@ class Pcl_utils():
             currentDistance = math.hypot(gpx, gpy)
             error = abs(self.desiredDistance - currentDistance)
             l_v = error * self.speed_
-            linear_x = min(l_v, self.vel_max)
-            angular_z = math.atan2(gpy, gpx)
+            self.linear_x = min(l_v, self.vel_max)
+            self.angular_z = math.atan2(gpy, gpx)
             
-            print(linear_x, angular_z)
+            
+        
+        else:
+            self.linear_x = 0.0
+            self.angular_z = 0.0
 
 
         
