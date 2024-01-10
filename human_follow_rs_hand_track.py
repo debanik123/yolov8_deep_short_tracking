@@ -51,8 +51,9 @@ class RealSenseYoloHandTracker:
         results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-                self.draw_hand_rectangle(frame, hand_landmarks, depth)
+                x_mid, y_mid = self.draw_hand_rectangle(frame, hand_landmarks, depth)
                 finger_count = self.count_fingers(hand_landmarks)
+                cv2.putText(frame, str(finger_count),(int(x_mid), int(y_mid-11)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
                 return finger_count
         else:
             return 0.0
@@ -72,10 +73,10 @@ class RealSenseYoloHandTracker:
         
         x_mid = (x_min + x_max) //2
         y_mid = (y_min + y_max) //2
-        cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 0), thickness=-1)
 
-        
+        cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 0), thickness=-1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        return x_mid, y_mid
 
 
     def run(self):
