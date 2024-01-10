@@ -16,7 +16,7 @@ class RealSenseYoloHandTracker:
         self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
         self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 
-        self.hand_distance_th = 1.0
+        self.hand_distance_th = 0.9
         self.track_id_ = None
 
         self.mp_hands = mp.solutions.hands
@@ -63,11 +63,18 @@ class RealSenseYoloHandTracker:
 
         for landmark in landmarks.landmark:
             x, y = int(landmark.x * w), int(landmark.y * h)
+            
             x_min = min(x_min, x)
             y_min = min(y_min, y)
             x_max = max(x_max, x)
             y_max = max(y_max, y)
 
+        
+        x_mid = (x_min + x_max) //2
+        y_mid = (y_min + y_max) //2
+        cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 0), thickness=-1)
+
+        
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
 
@@ -95,8 +102,20 @@ class RealSenseYoloHandTracker:
                 self.tracker.draw_bbx(track, frame)
                 bbox = track.to_tlbr()
                 x_min, y_min, x_max, y_max = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
-                hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
-                finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
+
+                x_mid = (x_min + x_max) //2
+                y_mid = (y_min + y_max) //2
+                cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 255), thickness=-1)
+                human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
+                cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-11)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+
+                try:
+                    if human_distance<self.hand_distance_th:
+                        hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
+                        finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
+                
+                except:
+                    pass
             
 
 
