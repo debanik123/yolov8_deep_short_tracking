@@ -62,9 +62,9 @@ class RealSenseYoloHandTracker:
                         self.tracker.isFollowing = True
                         self.tracker.draw_bbx(track, frame)
 
-                    else:
-                        self.tracker.unique_id = None
-                        self.isFollowing = False
+                    # else:
+                    #     self.tracker.unique_id = None
+                    #     self.isFollowing = False
             
             
 

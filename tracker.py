@@ -93,7 +93,7 @@ class Tracker:
 
 
     def keypoints_utils(self, frame, results):
-        
+
         keypoints_tensor = results[0].keypoints.data.tolist()
         
         yolo_bboxes, yolo_scores, yolo_classes = self.bbx_utils(results)
@@ -110,7 +110,7 @@ class Tracker:
                 # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
                 # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
-                if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
+                if right_angle is not None and right_angle > 70 and right_angle < 95:
                     self.unique_id = track.track_id
                     print("Start following the person with ID: ", self.unique_id)
 
