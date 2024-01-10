@@ -15,8 +15,8 @@ class Pcl_utils():
         self.obstracle_distance_th = 1.0
         self.stop_flag = False
         self.desiredDistance = 1.0
-        self.vel_max = 1.5
-        self.speed_ = 0.85
+        self.vel_max = 1.2
+        self.speed_ = 0.5
 
         self.linear_x = 0.0
         self.angular_z = 0.0
