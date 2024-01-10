@@ -60,10 +60,7 @@ class Tracker:
         cmap = plt.get_cmap('tab20b') #initialize color map
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
         self.detection_threshold = 0.80
-        self.tracks_ = None
-
-        self.isFollowing = False
-        self.unique_id = None
+        
 
     def update(self, frame, bboxes, scores, classes):
         features = self.encoder(frame, bboxes)

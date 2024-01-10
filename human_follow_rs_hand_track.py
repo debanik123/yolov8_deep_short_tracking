@@ -18,6 +18,8 @@ class RealSenseYoloHandTracker:
 
         self.hand_distance_th = 0.9
         self.track_id_ = None
+        self.isFollowing = False
+        self.unique_id = None
 
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands()
@@ -108,11 +110,19 @@ class RealSenseYoloHandTracker:
                     y_mid = (y_min + y_max) //2
                     cv2.circle(frame, (x_mid, y_mid), radius=5, color=(0, 255, 255), thickness=-1)
                     human_distance = self.pcl_uts.convert_pixel_to_distance(depth_frame, x_mid, y_mid)
-                    cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-11)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                    cv2.putText(frame, str(human_distance),(int(x_mid), int(y_mid-50)),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                     if human_distance<self.hand_distance_th:
                         hand_tracking_frame = frame[y_min:y_max, x_min:x_max]
                         finger_count = self.hand_tracking(hand_tracking_frame, depth_frame)
+                        if finger_count == 2:
+                            self.unique_id = track.track_id
+                        if finger_count == 3:
+                            self.unique_id = None
+
+                    if self.unique_id == track.track_id:
+                        cv2.putText(frame, "follow_"+str(self.unique_id),(int(x_mid), int(y_mid-11)),0, 1.0, (0,255,0),1, lineType=cv2.LINE_AA)
+
 
             except:
                 pass
