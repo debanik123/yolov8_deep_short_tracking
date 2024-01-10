@@ -102,7 +102,7 @@ class Tracker:
         dict_ = {str(idx): track.track_id for idx, (kps, track) in enumerate(zip(keypoints_tensor, self.tracks_))}
         print(dict_)
 
-        for idx, (kps, track) in enumerate(zip(keypoints_tensor, self.tracks_)):
+        for idx, kps in enumerate(keypoints_tensor):
             try:
                 right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
                 left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
