@@ -4,7 +4,7 @@ import math
 import cv2
 
 class VelocityGenerator:
-    def __init__(self, desired_distance=1.0, vel_max=2.0, speed=0.85):
+    def __init__(self, desired_distance=1.0, vel_max=1.5, speed=0.85):
         self.desired_distance = desired_distance
         self.vel_max = vel_max
         self.speed = speed
