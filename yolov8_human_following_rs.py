@@ -83,7 +83,7 @@ class YOLOv8TrackingNode(Node):
 
                 if self.unique_id not in ids_tensor:
                     self.isFollowing = False
-                    self.stop_robot()
+                    # self.stop_robot()
 
                 for bbx, id in zip(boxes_tensor, ids_tensor):
                     if self.unique_id == id:
@@ -93,7 +93,10 @@ class YOLOv8TrackingNode(Node):
                         y1 = int(bbx[1])
                         x2 = int(bbx[2])
                         y2 = int(bbx[3])
-                        hm_midpoint = (int((x1+x2) // 2.0), int((y1+y2) // 2.0))
+
+                        x_mid = int((x1+x2) // 2.0)
+                        y_mid = int((y1+y2) // 2.0)
+                        hm_midpoint = (x_mid, y_mid)
                         cv2.putText(frame, "Follow : "+str(self.unique_id),hm_midpoint,0, 1, (0,255,255),1, lineType=cv2.LINE_AA)
                         cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
@@ -103,8 +106,14 @@ class YOLOv8TrackingNode(Node):
                         self.cmd_vel(linear_velocity, angular_velocity)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                    elif self.unique_id is None:
-                        self.stop_robot()
+                        linear_x_str = "{:.3f}".format(linear_velocity)
+                        angular_z_str = "{:.3f}".format(angular_velocity)
+                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+
+
+                    # elif self.unique_id is None:
+                        # self.stop_robot()
+                        
                     
 
             except:
