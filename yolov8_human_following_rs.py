@@ -72,7 +72,7 @@ class YOLOv8TrackingNode(Node):
         cv2.circle(frame, pixels_min[min_index], radius=5, color=(0,0,255), thickness=-1)
         min_x, min_y = pixels_min[min_index]
 
-        return min_x, min_y
+        return (min_x, min_y), min_distance
 
 
 
@@ -125,8 +125,11 @@ class YOLOv8TrackingNode(Node):
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                        min_hm_pix = self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
-                        min_img_pix = self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
+                        min_hm_pix, min_hm_distance = self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
+                        min_img_pix, min_Im_distance = self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
+
+                        cv2.putText(frame, str(min_hm_distance) ,(min_hm_pix[0], min_hm_pix[1]-100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame, str(min_Im_distance) ,(min_img_pix[0], min_img_pix[1]+100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
 
                         linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(min_img_pix, min_hm_pix)
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
