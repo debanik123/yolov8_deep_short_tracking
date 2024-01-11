@@ -47,7 +47,7 @@ class YOLOv8TrackingNode(Node):
             im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
             cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
 
-            results = self.model.track(frame, persist=True, classes=[0], conf=0.60, iou=0.7, max_det=10)
+            results = self.model.track(frame, persist=True, classes=[0], conf=0.60, iou=0.7, max_det=5)
 
             try:
                 keypoints_tensor = results[0].keypoints.data.tolist()
