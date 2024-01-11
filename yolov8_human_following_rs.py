@@ -54,6 +54,8 @@ class YOLOv8TrackingNode(Node):
                 boxes_tensor = results[0].boxes.data.tolist()
                 ids_tensor = results[0].boxes.id.tolist()
 
+                print(ids_tensor)
+
                 if self.unique_id not in ids_tensor:
                     self.isFollowing = False
 
@@ -66,6 +68,7 @@ class YOLOv8TrackingNode(Node):
                         x2 = int(bbx[2])
                         y2 = int(bbx[3])
                         hm_midpoint = (int((x1+x2) // 2.0), int((y1+y2) // 2.0))
+                        cv2.putText(frame, "Follow : "+str(self.unique_id),hm_midpoint,0, 1, (0,255,255),1, lineType=cv2.LINE_AA)
                         cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
 
