@@ -131,7 +131,7 @@ class YOLOv8TrackingNode(Node):
                         cv2.putText(frame, str(min_Im_distance) ,(min_img_pix[0], min_img_pix[1]+100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
 
                         linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(min_img_pix, min_hm_pix)
-                        print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
+                        # print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
 
                         self.cmd_vel(linear_velocity, angular_velocity)
                         
@@ -158,8 +158,8 @@ class YOLOv8TrackingNode(Node):
                     right_angle = right_kps.distance()
                     left_angle = left_kps.distance()
 
-                    print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
-                    print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
+                    # print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
+                    # print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
                     if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
                         self.unique_id = ids_tensor[idx]
