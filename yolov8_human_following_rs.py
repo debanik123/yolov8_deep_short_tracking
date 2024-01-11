@@ -72,10 +72,7 @@ class YOLOv8TrackingNode(Node):
         cv2.circle(frame, pixels_min[min_index], radius=5, color=(0,0,255), thickness=-1)
         min_x, min_y = pixels_min[min_index]
 
-        print("Minimum Distance:", min_distance)
-        print("Index of Minimum Distance:", min_index)
-
-        return pf.convert_pixel_to_3d_world(min_x, min_y)
+        return min_x, min_y
 
 
 
@@ -128,25 +125,17 @@ class YOLOv8TrackingNode(Node):
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                        self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
-                        self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
+                        min_hm_pix = self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
+                        min_img_pix = self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
 
-                        linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
+                        linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(min_img_pix, min_hm_pix)
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
-
-                        
-                        # img_dis = pf.convert_pixel_to_distance(im_midpoint[0], im_midpoint[1])
-                        # cv2.putText(frame, str(img_dis) ,(im_midpoint[0], im_midpoint[1]+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
-
-                        
-                        # cv2.putText(frame, str(hm_dis) ,(hm_midpoint[0], hm_midpoint[1]+150),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                         self.cmd_vel(linear_velocity, angular_velocity)
                         
-
-                        # linear_x_str = "{:.3f}".format(linear_velocity)
-                        # angular_z_str = "{:.3f}".format(angular_velocity)
-                        # cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        linear_x_str = "{:.3f}".format(linear_velocity)
+                        angular_z_str = "{:.3f}".format(angular_velocity)
+                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
 
                     # elif self.unique_id is None:
