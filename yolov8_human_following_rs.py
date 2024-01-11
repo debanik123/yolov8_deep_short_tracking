@@ -53,8 +53,9 @@ class YOLOv8TrackingNode(Node):
         cmd_vel_msg.angular.z = a_v
         self.cmd_vel_pub.publish(cmd_vel_msg)
     
-    def cluster_create(self, frame, x,y, depth_frame, window_size=10, color_=(255, 0, 255)):
-        
+    def cluster_create(self, frame, x,y, depth_frame, window_size=15, color_=(255, 0, 255)):
+        hm_distances = []
+        pixels_min = []
         for i in range(-window_size // 2, window_size // 2 + 1):
             for j in range(-window_size // 2, window_size // 2 + 1):
                 current_x = x + i
@@ -63,6 +64,14 @@ class YOLOv8TrackingNode(Node):
                 hm_dis = pf.convert_pixel_to_distance(current_x, current_y)
                 if hm_dis:
                     cv2.circle(frame, (current_x, current_y), radius=2, color=color_, thickness=-1)
+                    hm_distances.append(hm_dis)
+                    pixels_min.append((current_x, current_y))
+
+        
+        min_index, min_distance = min(enumerate(hm_distances), key=lambda x: x[1])
+        cv2.circle(frame, pixels_min[min_index], radius=5, color=(0,0,255), thickness=-1)
+        print("Minimum Distance:", min_distance)
+        print("Index of Minimum Distance:", min_index)
 
 
 
@@ -113,6 +122,7 @@ class YOLOv8TrackingNode(Node):
                         cv2.putText(frame, "Follow : "+str(self.unique_id),hm_midpoint,0, 1, (0,255,255),1, lineType=cv2.LINE_AA)
                         # cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
                         self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
                         self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
@@ -128,7 +138,7 @@ class YOLOv8TrackingNode(Node):
                         # cv2.putText(frame, str(hm_dis) ,(hm_midpoint[0], hm_midpoint[1]+150),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                         self.cmd_vel(linear_velocity, angular_velocity)
-                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        
 
                         # linear_x_str = "{:.3f}".format(linear_velocity)
                         # angular_z_str = "{:.3f}".format(angular_velocity)
