@@ -52,6 +52,18 @@ class YOLOv8TrackingNode(Node):
         cmd_vel_msg.angular.y = 0.0
         cmd_vel_msg.angular.z = a_v
         self.cmd_vel_pub.publish(cmd_vel_msg)
+    
+    def cluster_create(self, frame, x,y, depth_frame, window_size=10, color_=(255, 0, 255)):
+        
+        for i in range(-window_size // 2, window_size // 2 + 1):
+            for j in range(-window_size // 2, window_size // 2 + 1):
+                current_x = x + i
+                current_y = y + j
+                pf = PixeltoPcl(depth_frame)
+                hm_dis = pf.convert_pixel_to_distance(current_x, current_y)
+                if hm_dis:
+                    cv2.circle(frame, (current_x, current_y), radius=2, color=color_, thickness=-1)
+
 
 
     def process_frames(self):
@@ -68,10 +80,10 @@ class YOLOv8TrackingNode(Node):
 
             frame = np.asanyarray(color_frame.get_data())
             pvg_rs = PixelToVelocityGenerator_rs(depth_frame)
-            pf = PixeltoPcl(depth_frame)
+            
 
             im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
-            cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
+            # cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
 
             results = self.model.track(frame, persist=True, classes=[0], conf=0.60, iou=0.7, max_det=5)
 
@@ -99,17 +111,21 @@ class YOLOv8TrackingNode(Node):
                         y_mid = int((y1+y2) // 2.0)
                         hm_midpoint = (x_mid, y_mid)
                         cv2.putText(frame, "Follow : "+str(self.unique_id),hm_midpoint,0, 1, (0,255,255),1, lineType=cv2.LINE_AA)
-                        cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
+                        # cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
                         cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
+
+                        self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
+                        self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
 
                         linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
 
-                        img_dis = pf.convert_pixel_to_distance(im_midpoint[0], im_midpoint[1])
-                        cv2.putText(frame, str(img_dis) ,(im_midpoint[0], im_midpoint[1]+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        
+                        # img_dis = pf.convert_pixel_to_distance(im_midpoint[0], im_midpoint[1])
+                        # cv2.putText(frame, str(img_dis) ,(im_midpoint[0], im_midpoint[1]+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
-                        hm_dis = pf.convert_pixel_to_distance(hm_midpoint[0], hm_midpoint[1])
-                        cv2.putText(frame, str(hm_dis) ,(hm_midpoint[0], hm_midpoint[1]+150),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        
+                        # cv2.putText(frame, str(hm_dis) ,(hm_midpoint[0], hm_midpoint[1]+150),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                         self.cmd_vel(linear_velocity, angular_velocity)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
