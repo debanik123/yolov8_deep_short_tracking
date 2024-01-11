@@ -54,7 +54,7 @@ class YOLOv8TrackingNode(Node):
 
                 for bbx, id in zip(boxes_tensor, ids_tensor):
                     if self.tracking_index == id:
-                        print(bbx, id)
+                        # print(bbx, id)
                         x1 = int(bbx[0])
                         y1 = int(bbx[1])
                         x2 = int(bbx[2])
