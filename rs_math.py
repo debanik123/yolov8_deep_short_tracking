@@ -4,7 +4,7 @@ import math
 import cv2
 
 class VelocityGenerator:
-    def __init__(self, desired_distance=1.5, vel_max=1.2, speed=0.85):
+    def __init__(self, desired_distance=1.0, vel_max=1.2, speed=0.85):
         self.desired_distance = desired_distance
         self.vel_max = vel_max
         self.speed = speed
@@ -34,9 +34,9 @@ class VelocityGenerator:
         dis_refe_targ_pcd = self.dis_fun([refe_point_pcd[0] - target_point_pcd[0], refe_point_pcd[1] - target_point_pcd[1]])
 
         gamma = self.cosine(dis_refe_pcd, dis_targ_pcd, dis_refe_targ_pcd)
-        gamma_corr = self.gamma_sign_correction(gamma, target_point_pcd[1])
 
         if gamma is not None:
+            gamma_corr = self.gamma_sign_correction(gamma, target_point_pcd[1])
             gpx = dis_targ_pcd * math.cos(gamma_corr)
             gpy = dis_targ_pcd * math.sin(gamma_corr)
             current_distance = math.hypot(gpx, gpy)
