@@ -15,8 +15,6 @@ class YOLOv8TrackingNode(Node):
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.pipeline.start(self.config)
-
-        
     
     def check_camera_connection(self):
         ctx = rs.context()
@@ -59,16 +57,15 @@ class YOLOv8TrackingNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
-    yolov8_tracking_node = YOLOv8TrackingNode()
-
     try:
-        rclpy.spin(yolov8_tracking_node)
+        yolov8_tracking_node = YOLOv8TrackingNode()
+        yolov8_tracking_node.process_frames()
     except KeyboardInterrupt:
         pass
-
-    yolov8_tracking_node.destroy_node()
-    rclpy.shutdown()
+    
+    finally:
+        yolov8_tracking_node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
