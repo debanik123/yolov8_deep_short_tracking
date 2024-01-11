@@ -8,7 +8,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
 
-from rs_math import PixelToVelocityGenerator_rs, Keypoints
+from rs_math import PixelToVelocityGenerator_rs, Keypoints, PixeltoPcl
 
 class YOLOv8TrackingNode(Node):
     def __init__(self):
@@ -68,6 +68,7 @@ class YOLOv8TrackingNode(Node):
 
             frame = np.asanyarray(color_frame.get_data())
             pvg_rs = PixelToVelocityGenerator_rs(depth_frame)
+            pf = PixeltoPcl(depth_frame)
 
             im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
             cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
@@ -103,12 +104,19 @@ class YOLOv8TrackingNode(Node):
 
                         linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
+
+                        img_dis = pf.convert_pixel_to_distance(im_midpoint[0], im_midpoint[1])
+                        cv2.putText(frame, str(img_dis) ,(im_midpoint[0], im_midpoint[1]+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+
+                        hm_dis = pf.convert_pixel_to_distance(hm_midpoint[0], hm_midpoint[1])
+                        cv2.putText(frame, str(hm_dis) ,(hm_midpoint[0], hm_midpoint[1]+150),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+
                         self.cmd_vel(linear_velocity, angular_velocity)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                        linear_x_str = "{:.3f}".format(linear_velocity)
-                        angular_z_str = "{:.3f}".format(angular_velocity)
-                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        # linear_x_str = "{:.3f}".format(linear_velocity)
+                        # angular_z_str = "{:.3f}".format(angular_velocity)
+                        # cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
 
                     # elif self.unique_id is None:
