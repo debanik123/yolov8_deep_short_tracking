@@ -4,10 +4,11 @@ import math
 import cv2
 
 class VelocityGenerator:
-    def __init__(self, desired_distance=1.0, vel_max=1.5, speed=0.85):
+    def __init__(self, desired_distance=1.0, vel_max=1.5, speed=0.65):
         self.desired_distance = desired_distance
         self.vel_max = vel_max
         self.speed = speed
+        self.follow_distance_th = 0.9
 
         self.linear_x = 0.0
         self.angular_z = 0.0
@@ -40,10 +41,15 @@ class VelocityGenerator:
             gpx = dis_targ_pcd * math.cos(gamma_corr)
             gpy = dis_targ_pcd * math.sin(gamma_corr)
             current_distance = math.hypot(gpx, gpy)
-            error = abs(self.desired_distance - current_distance)
-            l_v = error * self.speed
-            self.linear_x = min(l_v, self.vel_max)
-            self.angular_z = math.atan2(gpy, gpx)
+            if current_distance>self.follow_distance_th:
+                error = abs(self.desired_distance - current_distance)
+                l_v = error * self.speed
+                self.linear_x = min(l_v, self.vel_max)
+                self.angular_z = math.atan2(gpy, gpx)
+            else:
+                self.linear_x = 0.0
+                self.angular_z = 0.0
+
 
     def generate_velocity(self, refe_point, target_point):
         self.find_gpxy(refe_point, target_point)
