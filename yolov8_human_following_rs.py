@@ -5,6 +5,8 @@ import numpy as np
 
 import rclpy
 from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
 
 from rs_math import PixelToVelocityGenerator_rs, Keypoints
 
@@ -22,12 +24,35 @@ class YOLOv8TrackingNode(Node):
         self.unique_id = None
         self.track_id_ = None
         self.isFollowing = False
+
+        self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
     
     def check_camera_connection(self):
         ctx = rs.context()
         devices = ctx.query_devices()
         if not devices:
             raise RuntimeError("No RealSense devices found. Connect a RealSense camera and try again.")
+    
+    def stop_robot(self):
+        cmd_vel_msg = Twist()
+        cmd_vel_msg.linear.x = 0.0
+        cmd_vel_msg.linear.y = 0.0
+        cmd_vel_msg.linear.z = 0.0
+        cmd_vel_msg.angular.x = 0.0
+        cmd_vel_msg.angular.y = 0.0
+        cmd_vel_msg.angular.z = 0.0
+        self.cmd_vel_pub.publish(cmd_vel_msg)
+    
+    def cmd_vel(self, l_v, a_v):
+        cmd_vel_msg = Twist()
+        cmd_vel_msg.linear.x = l_v
+        cmd_vel_msg.linear.y = 0.0
+        cmd_vel_msg.linear.z = 0.0
+        cmd_vel_msg.angular.x = 0.0
+        cmd_vel_msg.angular.y = 0.0
+        cmd_vel_msg.angular.z = a_v
+        self.cmd_vel_pub.publish(cmd_vel_msg)
+
 
     def process_frames(self):
         while True:
@@ -58,6 +83,7 @@ class YOLOv8TrackingNode(Node):
 
                 if self.unique_id not in ids_tensor:
                     self.isFollowing = False
+                    self.stop_robot()
 
                 for bbx, id in zip(boxes_tensor, ids_tensor):
                     if self.unique_id == id:
@@ -74,9 +100,11 @@ class YOLOv8TrackingNode(Node):
 
                         linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
-
+                        self.cmd_vel(linear_velocity, angular_velocity)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    
+
+                    elif self.unique_id is None:
+                        self.stop_robot()
                     
 
             except:
@@ -96,14 +124,11 @@ class YOLOv8TrackingNode(Node):
                     print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
                     if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
-                        self.tracking_activate = True
                         self.unique_id = ids_tensor[idx]
 
                     if left_angle is not None and left_angle > 70 and left_angle < 95 and self.unique_id == ids_tensor[idx]:
-                        self.tracking_activate = False
                         self.unique_id = None
                         self.isFollowing = False
-
                 except:
                     pass
 
