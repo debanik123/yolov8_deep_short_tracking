@@ -18,7 +18,10 @@ class YOLOv8TrackingNode(Node):
         self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         self.pipeline.start(self.config)
-        self.tracking_index = None
+
+        self.unique_id = None
+        self.track_id_ = None
+        self.isFollowing = False
     
     def check_camera_connection(self):
         ctx = rs.context()
@@ -47,13 +50,16 @@ class YOLOv8TrackingNode(Node):
             results = self.model.track(frame, persist=True, classes=[0], conf=0.60, iou=0.7, max_det=10)
 
             try:
-
                 keypoints_tensor = results[0].keypoints.data.tolist()
                 boxes_tensor = results[0].boxes.data.tolist()
                 ids_tensor = results[0].boxes.id.tolist()
 
+                if self.unique_id not in ids_tensor:
+                    self.isFollowing = False
+
                 for bbx, id in zip(boxes_tensor, ids_tensor):
-                    if self.tracking_index == id:
+                    if self.unique_id == id:
+                        self.isFollowing = True
                         # print(bbx, id)
                         x1 = int(bbx[0])
                         y1 = int(bbx[1])
@@ -67,7 +73,9 @@ class YOLOv8TrackingNode(Node):
                         print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
 
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            
+                    
+                    
+
             except:
                 pass
 
@@ -84,13 +92,14 @@ class YOLOv8TrackingNode(Node):
                     print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
                     print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
 
-                    if right_angle is not None and right_angle > 70 and right_angle < 95:
+                    if right_angle is not None and right_angle > 70 and right_angle < 95 and not self.isFollowing:
                         self.tracking_activate = True
-                        self.tracking_index = ids_tensor[idx]
+                        self.unique_id = ids_tensor[idx]
 
-                    if left_angle is not None and left_angle > 70 and left_angle < 95:
+                    if left_angle is not None and left_angle > 70 and left_angle < 95 and self.unique_id == ids_tensor[idx]:
                         self.tracking_activate = False
-                        self.tracking_index = None
+                        self.unique_id = None
+                        self.isFollowing = False
 
                 except:
                     pass
