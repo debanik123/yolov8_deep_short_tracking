@@ -127,18 +127,20 @@ class YOLOv8TrackingNode(Node):
                         min_hm_pix, min_hm_distance = self.cluster_create(frame, hm_midpoint[0], hm_midpoint[1], depth_frame, color_=(255, 0, 255))
                         min_img_pix, min_Im_distance = self.cluster_create(frame, im_midpoint[0], im_midpoint[1], depth_frame, color_=(0, 255, 255))
 
-                        cv2.putText(frame, str(min_hm_distance) ,(min_hm_pix[0], min_hm_pix[1]-100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
-                        cv2.putText(frame, str(min_Im_distance) ,(min_img_pix[0], min_img_pix[1]+100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
+                        # cv2.putText(frame, str(min_hm_distance) ,(min_hm_pix[0], min_hm_pix[1]-100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
+                        # cv2.putText(frame, str(min_Im_distance) ,(min_img_pix[0], min_img_pix[1]+100),0, 0.5, (255,255,255),1, lineType=cv2.LINE_AA)
 
-                        linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(min_img_pix, min_hm_pix)
+                        linear_velocity, angular_velocity, current_distance = pvg_rs.generate_velocity_from_pixels(min_img_pix, min_hm_pix)
                         # print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
 
                         self.cmd_vel(linear_velocity, angular_velocity)
                         
                         linear_x_str = "{:.3f}".format(linear_velocity)
                         angular_z_str = "{:.3f}".format(angular_velocity)
-                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str ,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        curr_dis_str = "{:.4f}".format(current_distance)
 
+                        cv2.putText(frame, "linear_x: "+ linear_x_str +" angular_z: " + angular_z_str,(x_mid, y_mid+50),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame, "curr_dis: "+str(curr_dis_str),(x_mid, y_mid+80),0, 1.0, (255,255,255),1, lineType=cv2.LINE_AA)
 
                     # elif self.unique_id is None:
                         # self.stop_robot()

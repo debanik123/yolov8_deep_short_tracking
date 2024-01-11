@@ -9,7 +9,7 @@ class VelocityGenerator:
         self.vel_max = vel_max
         self.speed = speed
         self.follow_distance_th = 0.6
-
+        self.current_distance = 0.0
         self.linear_x = 0.0
         self.angular_z = 0.0
 
@@ -46,6 +46,7 @@ class VelocityGenerator:
                 l_v = error * self.speed
                 self.linear_x = min(l_v, self.vel_max)
                 self.angular_z = math.atan2(gpy, gpx)
+                self.current_distance = current_distance
             else:
                 self.linear_x = 0.0
                 self.angular_z = 0.0
@@ -53,7 +54,7 @@ class VelocityGenerator:
 
     def generate_velocity(self, refe_point, target_point):
         self.find_gpxy(refe_point, target_point)
-        return self.linear_x, self.angular_z
+        return self.linear_x, self.angular_z, self.current_distance
 
 
 
@@ -86,9 +87,9 @@ class PixelToVelocityGenerator_rs:
         target_point_pcd = self.pixel_to_pcl_converter.convert_pixel_to_3d_world(*target_point_pixel)
 
         # Generate velocity using VelocityGenerator
-        linear_velocity, angular_velocity = self.velocity_generator.generate_velocity(refe_point_pcd, target_point_pcd)
+        linear_velocity, angular_velocity, current_distance = self.velocity_generator.generate_velocity(refe_point_pcd, target_point_pcd)
 
-        return linear_velocity, angular_velocity
+        return linear_velocity, angular_velocity, current_distance
 
 
 class Keypoints:
