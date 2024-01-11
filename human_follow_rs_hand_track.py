@@ -175,7 +175,7 @@ class RealSenseFollowme(Node):
 
                     if self.unique_id is not None and self.unique_id == track.track_id:
                         self.isFollowing = True
-                        hm_midpoint = (int(x_mid), int(frame.shape[0] // 2.0))
+                        hm_midpoint = (int(x_mid), int(y_mid // 2.0))
                         im_midpoint = (int(frame.shape[1] // 2.0), int(frame.shape[0] // 2.0))
 
                         cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
