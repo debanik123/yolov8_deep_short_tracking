@@ -54,7 +54,7 @@ class YOLOv8TrackingNode(Node):
                 boxes_tensor = results[0].boxes.data.tolist()
                 ids_tensor = results[0].boxes.id.tolist()
 
-                print(ids_tensor)
+                # print(ids_tensor)
 
                 if self.unique_id not in ids_tensor:
                     self.isFollowing = False
