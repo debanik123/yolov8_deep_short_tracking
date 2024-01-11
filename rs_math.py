@@ -8,7 +8,7 @@ class VelocityGenerator:
         self.desired_distance = desired_distance
         self.vel_max = vel_max
         self.speed = speed
-        self.follow_distance_th = 0.9
+        self.follow_distance_th = 0.5
 
         self.linear_x = 0.0
         self.angular_z = 0.0
