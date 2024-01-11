@@ -70,8 +70,12 @@ class YOLOv8TrackingNode(Node):
         
         min_index, min_distance = min(enumerate(hm_distances), key=lambda x: x[1])
         cv2.circle(frame, pixels_min[min_index], radius=5, color=(0,0,255), thickness=-1)
+        min_x, min_y = pixels_min[min_index]
+
         print("Minimum Distance:", min_distance)
         print("Index of Minimum Distance:", min_index)
+
+        return pf.convert_pixel_to_3d_world(min_x, min_y)
 
 
 
