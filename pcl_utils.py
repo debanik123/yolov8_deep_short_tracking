@@ -71,23 +71,6 @@ class Pcl_utils():
             l_v = error * self.speed_
             self.linear_x = min(l_v, self.vel_max)
             self.angular_z = math.atan2(gpy, gpx)
-            
-            
-        
-        # else:
-        #     self.linear_x = 0.0
-        #     self.angular_z = 0.0
-
-
-        
-    # def vel_gen(self, x, y):
-    #     currentDistance = math.hypot(x,y)
-    #     print("currentDistance: -> ", currentDistance)
-    #     error = abs(self.desiredDistance - currentDistance)
-    #     l_v = error * self.speed_
-    #     linear_x = min(l_v, self.vel_max)
-    #     angular_z = math.atan2(y, x)
-    #     return linear_x, angular_z
 
     def calculate_pix_distance(self, point1, point2):
         dx = point2[0] - point1[0]

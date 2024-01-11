@@ -18,3 +18,4 @@
 !/human_pose_detection.py
 !/test
 !/yolov8_human_following_rs.py
+!/rs_math.py
