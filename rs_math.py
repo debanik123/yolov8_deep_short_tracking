@@ -62,11 +62,35 @@ class PixeltoPcl:
         distance = self.depth_frame.get_distance(x, y)
         return distance
 
-    def convert_pixel_to_3d_world(self, x, y):
+    def convert_pixel_to_3d_world_single(self, x, y):
         upixel = np.array([float(x), float(y)], dtype=np.float32)
         distance = self.depth_frame.get_distance(x, y)
         pcd = rs.rs2_deproject_pixel_to_point(self.intrinsics, upixel, distance)
         return pcd[2], -pcd[0], -pcd[1]  # ros coordinates X, Y, Z
+    
+    def convert_pixel_to_3d_world(self, x, y, window_size=5):
+        # Create a small point cloud around the specified (x, y) coordinates
+        min_distance = float('inf')
+        min_point = None
+
+        for i in range(-window_size // 2, window_size // 2 + 1):
+            for j in range(-window_size // 2, window_size // 2 + 1):
+                current_x = x + i
+                current_y = y + j
+
+                if 0 <= current_x < self.depth_frame.width and 0 <= current_y < self.depth_frame.height:
+                    distance = self.convert_pixel_to_distance(current_x, current_y)
+
+                    if distance < min_distance:
+                        min_distance = distance
+                        min_point = (current_x, current_y)
+
+        if min_point is not None:
+            upixel = np.array([float(min_point[0]), float(min_point[1])], dtype=np.float32)
+            pcd = rs.rs2_deproject_pixel_to_point(self.intrinsics, upixel, min_distance)
+            return pcd[2], -pcd[0], -pcd[1]  # ROS coordinates X, Y, Z
+
+        return None
 
 
 class PixelToVelocityGenerator_rs:
