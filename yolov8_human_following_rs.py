@@ -6,7 +6,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from rs_math import PixelToVelocityGenerator_rs
+from rs_math import PixelToVelocityGenerator_rs, Keypoints
 
 class YOLOv8TrackingNode(Node):
     def __init__(self):
@@ -18,6 +18,7 @@ class YOLOv8TrackingNode(Node):
         self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         self.pipeline.start(self.config)
+        self.tracking_index = None
     
     def check_camera_connection(self):
         ctx = rs.context()
@@ -44,24 +45,60 @@ class YOLOv8TrackingNode(Node):
             cv2.circle(frame, im_midpoint, radius=5, color=(0, 255, 255), thickness=-1)
 
             results = self.model.track(frame, persist=True, classes=[0], conf=0.60, iou=0.7, max_det=10)
-            for result in results:
-                keypoints_tensor = result.keypoints.data.tolist()
-                boxes_tensor = result.boxes.data.tolist()
+
+            try:
+
+                keypoints_tensor = results[0].keypoints.data.tolist()
+                boxes_tensor = results[0].boxes.data.tolist()
+                ids_tensor = results[0].boxes.id.tolist()
+
+                for bbx, id in zip(boxes_tensor, ids_tensor):
+                    if self.tracking_index == id:
+                        print(bbx, id)
+                        x1 = int(bbx[0])
+                        y1 = int(bbx[1])
+                        x2 = int(bbx[2])
+                        y2 = int(bbx[3])
+                        hm_midpoint = (int((x1+x2) // 2.0), int((y1+y2) // 2.0))
+                        cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
+                        cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
+
+                        linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
+                        print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
+
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            
+            except:
+                pass
+
+            # print(results)
+            for idx, kps in enumerate(keypoints_tensor):
+
+                try:
+                    right_kps = Keypoints(frame, kps[12],kps[6], kps[8])
+                    left_kps = Keypoints(frame, kps[11],kps[5], kps[7])
+
+                    right_angle = right_kps.distance()
+                    left_angle = left_kps.distance()
+
+                    print("Right angle between hip, shoulder, and elbow:", right_angle, idx)
+                    print("Left angle between hip, shoulder, and elbow:", left_angle, idx)
+
+                    if right_angle is not None and right_angle > 70 and right_angle < 95:
+                        self.tracking_activate = True
+                        self.tracking_index = ids_tensor[idx]
+
+                    if left_angle is not None and left_angle > 70 and left_angle < 95:
+                        self.tracking_activate = False
+                        self.tracking_index = None
+
+                except:
+                    pass
+
                 
-                for res in boxes_tensor:
-                    x1 = int(res[0])
-                    y1 = int(res[1])
-                    x2 = int(res[2])
-                    y2 = int(res[3])
-                    hm_midpoint = (int((x1+x2) // 2.0), int((y1+y2) // 2.0))
-                    cv2.circle(frame, hm_midpoint, radius=5, color=(255, 0, 255), thickness=-1)
-                    cv2.line(frame, im_midpoint, hm_midpoint, color=(255, 255, 0), thickness=2)
-
-                    linear_velocity, angular_velocity = pvg_rs.generate_velocity_from_pixels(im_midpoint, hm_midpoint)
-                    print("Linear Velocity:", linear_velocity, "Angular Velocity:", angular_velocity)
-
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
+            
+            # annotated_frame = results[0].plot()
+            # cv2.imshow("YOLOv8 Tracking", annotated_frame)
             cv2.imshow("YOLOv8 Tracking", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
